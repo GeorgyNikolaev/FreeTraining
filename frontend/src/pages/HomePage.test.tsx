@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { courseInProgress, courseSummary } from "../test/mocks";
+import { courseCompletedWithResume, courseInProgress, courseSummary } from "../test/mocks";
 import { renderWithProviders } from "../test/render";
 import { server } from "../test/server";
 import { HomePage } from "./HomePage";
@@ -64,5 +64,16 @@ describe("HomePage", () => {
     renderWithProviders(<HomePage />);
 
     expect(screen.queryByText(courseSummary.title)).toBeNull();
+  });
+
+  it("предлагает повторить пройденный курс и не показывает его в блоке продолжения", async () => {
+    server.use(
+      http.get("/api/courses", () => HttpResponse.json([courseCompletedWithResume])),
+    );
+
+    renderWithProviders(<HomePage />);
+
+    expect(await screen.findByText("Повторить")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Продолжить обучение" })).toBeNull();
   });
 });

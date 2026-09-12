@@ -1,5 +1,5 @@
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowLeft, ArrowRight, Check, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { Markdown } from "../components/Markdown";
@@ -8,6 +8,7 @@ import { QueryState } from "../components/QueryState";
 import { Badge } from "../components/ui/Badge";
 import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { Button } from "../components/ui/Button";
+import { Callout } from "../components/ui/Callout";
 import { GlassPanel } from "../components/ui/GlassPanel";
 import {
   useCompleteLesson,
@@ -33,6 +34,7 @@ function nextLabel(step: StepLink | null | undefined): string {
 export function LessonPage() {
   const { courseId = "", moduleId = "", lessonId = "" } = useParams();
   const navigate = useNavigate();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const lesson = useLesson(courseId, moduleId, lessonId);
   const course = useCourse(courseId);
@@ -52,7 +54,7 @@ export function LessonPage() {
     complete.mutate(
       { moduleId, lessonId },
       {
-        onSettled: () => {
+        onSuccess: () => {
           void navigate(next ? stepPath(courseId, next) : `/courses/${courseId}`);
         },
       },
@@ -82,7 +84,33 @@ export function LessonPage() {
               {lesson.data.completed ? <Badge tone="success">Пройден</Badge> : null}
             </div>
 
+            {course.data ? (
+              <div className="lg:hidden">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  aria-expanded={mobileNavOpen}
+                  onClick={() => setMobileNavOpen((value) => !value)}
+                >
+                  <Menu size={16} />
+                  Содержание курса
+                </Button>
+
+                {mobileNavOpen ? (
+                  <GlassPanel className="mt-4 p-4">
+                    <ModuleTree course={course.data} activeLessonId={lessonId} />
+                  </GlassPanel>
+                ) : null}
+              </div>
+            ) : null}
+
             <Markdown content={lesson.data.content} />
+
+            {complete.error ? (
+              <Callout tone="danger" title="Не удалось отметить урок пройденным">
+                {complete.error.message}
+              </Callout>
+            ) : null}
 
             <footer className="flex flex-wrap items-center justify-between gap-4
               border-t border-line pt-6">

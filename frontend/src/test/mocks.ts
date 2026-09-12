@@ -33,6 +33,22 @@ export const courseInProgress: CourseSummary = {
   },
 };
 
+// Пройденный курс: бэкенд хранит место остановки и признак прохождения
+// независимо, поэтому у завершённого курса запись resume может остаться.
+export const courseCompletedWithResume: CourseSummary = {
+  ...courseSummary,
+  progress_percent: 100,
+  status: "completed",
+  resume: {
+    module_id: "02-syntax",
+    lesson_id: "01-variables",
+    lesson_title: "Переменные и типы данных",
+  },
+};
+
+// У обоих модулей есть тест модуля (has_quiz: true), поэтому запросы вида
+// «найти ссылку на тест модуля» (например, по имени «Тест модуля») дают два
+// совпадения — уточняйте область поиска (within/индекс), а не берите первое.
 export const courseDetail: CourseDetail = {
   ...courseSummary,
   modules: [

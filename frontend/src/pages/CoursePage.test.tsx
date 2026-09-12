@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
@@ -96,5 +96,49 @@ describe("CoursePage", () => {
 
     await screen.findByRole("tab", { name: "Модули" });
     expect(screen.queryByRole("tab", { name: "Термины" })).toBeNull();
+  });
+
+  it("предлагает повторить пройденный курс, даже если осталось место остановки", async () => {
+    server.use(
+      http.get("/api/courses/:course", () =>
+        HttpResponse.json({
+          ...courseDetail,
+          status: "completed",
+          resume: {
+            module_id: "02-syntax",
+            lesson_id: "01-variables",
+            lesson_title: "Переменные и типы данных",
+          },
+        }),
+      ),
+    );
+
+    renderPage();
+
+    expect(await screen.findByRole("link", { name: /Повторить курс/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Продолжить ·/)).toBeNull();
+  });
+
+  it("подсвечивает урок, на котором остановились", async () => {
+    server.use(
+      http.get("/api/courses/:course", () =>
+        HttpResponse.json({
+          ...courseDetail,
+          resume: {
+            module_id: "02-syntax",
+            lesson_id: "01-variables",
+            lesson_title: "Переменные и типы данных",
+          },
+        }),
+      ),
+    );
+
+    renderPage();
+
+    const nav = await screen.findByRole("navigation", { name: "Содержание курса" });
+    const activeLink = within(nav).getByRole("link", {
+      name: /Переменные и типы данных/,
+    });
+    expect(activeLink).toHaveAttribute("aria-current", "page");
   });
 });

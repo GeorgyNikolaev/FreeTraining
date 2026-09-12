@@ -49,11 +49,12 @@ export function CoursePage() {
       : firstLessonPath(course)
     : null;
 
-  const startLabel = course?.resume
-    ? `Продолжить · ${course.resume.lesson_title}`
-    : course?.status === "completed"
+  const startLabel =
+    course?.status === "completed"
       ? "Повторить курс"
-      : "Начать курс";
+      : course?.resume
+        ? `Продолжить · ${course.resume.lesson_title}`
+        : "Начать курс";
 
   return (
     <QueryState isLoading={isLoading} error={error}>
@@ -112,7 +113,7 @@ export function CoursePage() {
           {tab === "modules" ? (
             <Card>
               <CardBody>
-                <ModuleTree course={course} />
+                <ModuleTree course={course} activeLessonId={course.resume?.lesson_id} />
               </CardBody>
             </Card>
           ) : null}

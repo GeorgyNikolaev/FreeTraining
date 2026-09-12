@@ -120,6 +120,44 @@ describe("LessonPage", () => {
     expect(await screen.findByText("Пройден")).toBeInTheDocument();
   });
 
+  it("показывает ошибку отметки урока и не уходит со страницы", async () => {
+    server.use(
+      http.post("/api/progress/lessons/:course/:module/:lesson", () =>
+        HttpResponse.json({ detail: "Внутренняя ошибка" }, { status: 500 }),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: "Пройдено, дальше" }),
+    );
+
+    expect(await screen.findByText("Внутренняя ошибка")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Что такое Python", level: 1 }),
+    ).toBeInTheDocument();
+  });
+
+  it("раскрывает содержание курса на узком экране", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const toggle = await screen.findByRole("button", { name: "Содержание курса" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.getAllByRole("navigation", { name: "Содержание курса" }),
+    ).toHaveLength(1);
+
+    await user.click(toggle);
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getAllByRole("navigation", { name: "Содержание курса" }),
+    ).toHaveLength(2);
+  });
+
   it("показывает понятную ошибку, когда урока нет", async () => {
     server.use(
       http.get("/api/courses/:course/lessons/:module/:lesson", () =>

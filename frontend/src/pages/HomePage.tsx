@@ -37,7 +37,9 @@ function ResumeCard({ course }: { course: CourseSummary }) {
 
 export function HomePage() {
   const { data: courses, isLoading, error } = useCourses();
-  const resumable = (courses ?? []).filter((course) => course.resume !== null);
+  const resumable = (courses ?? []).filter(
+    (course) => course.resume !== null && course.status !== "completed",
+  );
 
   return (
     <div className="flex flex-col gap-12">

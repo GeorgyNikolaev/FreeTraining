@@ -36,11 +36,12 @@ export function CourseCard({ course }: { course: CourseSummary }) {
   const target = course.resume
     ? `/courses/${course.id}/${course.resume.module_id}/${course.resume.lesson_id}`
     : `/courses/${course.id}`;
-  const action = course.resume
-    ? "Продолжить"
-    : course.status === "completed"
+  const action =
+    course.status === "completed"
       ? "Повторить"
-      : "Начать курс";
+      : course.resume
+        ? "Продолжить"
+        : "Начать курс";
 
   return (
     <Card className="transition-shadow duration-150 hover:shadow-lift">

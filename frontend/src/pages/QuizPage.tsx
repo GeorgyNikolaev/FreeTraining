@@ -32,7 +32,7 @@ export function QuizPage({ scope }: { scope: "module" | "exam" }) {
             </p>
           </header>
 
-          <QuizRunner quiz={quiz.data} />
+          <QuizRunner key={scope === "exam" ? "exam" : moduleId} quiz={quiz.data} />
         </div>
       ) : null}
     </QueryState>
