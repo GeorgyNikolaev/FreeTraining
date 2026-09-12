@@ -366,7 +366,7 @@ Markdown вынесено в отдельный слой, настроенный
 | Слой | Технология |
 | --- | --- |
 | Бэкенд | Python 3.12, FastAPI, Pydantic v2, Uvicorn |
-| Доступ к базе | SQLModel поверх SQLAlchemy, драйвер asyncpg |
+| Доступ к базе | SQLModel поверх SQLAlchemy в асинхронном режиме, драйвер asyncpg |
 | База данных | PostgreSQL в контейнере Docker |
 | Содержимое | Папки на диске, Markdown и YAML, читает бэкенд |
 | Фронтенд | Vite, React, TypeScript, React Router, TanStack Query, Tailwind CSS |
