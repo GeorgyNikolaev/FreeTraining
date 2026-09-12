@@ -74,17 +74,23 @@ export function usePage(
 export function useModuleQuiz(
   courseId: string,
   moduleId: string,
+  enabled = true,
 ): UseQueryResult<QuizPublic, ApiError> {
   return useQuery({
     queryKey: queryKeys.moduleQuiz(courseId, moduleId),
     queryFn: () => apiFetch<QuizPublic>(`/api/courses/${courseId}/quizzes/${moduleId}`),
+    enabled,
   });
 }
 
-export function useExam(courseId: string): UseQueryResult<QuizPublic, ApiError> {
+export function useExam(
+  courseId: string,
+  enabled = true,
+): UseQueryResult<QuizPublic, ApiError> {
   return useQuery({
     queryKey: queryKeys.exam(courseId),
     queryFn: () => apiFetch<QuizPublic>(`/api/courses/${courseId}/exam`),
+    enabled,
   });
 }
 
