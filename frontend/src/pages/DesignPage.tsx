@@ -24,6 +24,16 @@ const COLORS = [
 
 const SPACE = [4, 8, 12, 16, 24, 32, 48, 64];
 
+const TEXT_SCALE = [
+  "text-xs",
+  "text-sm",
+  "text-base",
+  "text-lg",
+  "text-xl",
+  "text-2xl",
+  "text-3xl",
+] as const;
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="border-t border-line pt-8">
@@ -84,6 +94,17 @@ export function DesignPage() {
           </p>
           <p className="text-sm text-muted">Второстепенный текст</p>
           <p className="font-mono text-sm">const answer = 42;</p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-2 border-t border-line pt-6">
+          {TEXT_SCALE.map((cls) => (
+            <div key={cls} className="flex items-baseline gap-4">
+              <span className="w-20 shrink-0 font-mono text-xs text-subtle">
+                {cls}
+              </span>
+              <span className={cls}>Пример текста</span>
+            </div>
+          ))}
         </div>
       </Section>
 

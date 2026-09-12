@@ -37,4 +37,10 @@ describe("DesignPage", () => {
     expect(screen.getByRole("button", { name: "Основная" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Заблокирована" })).toBeDisabled();
   });
+
+  it("показывает шкалу размеров текста в разделе «Типографика»", () => {
+    renderPage();
+
+    expect(screen.getByText("text-base")).toBeInTheDocument();
+  });
 });
