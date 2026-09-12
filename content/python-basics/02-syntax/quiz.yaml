@@ -1,0 +1,10 @@
+pass_score: 70
+questions:
+  - question: Какой тип у значения 1.72?
+    options: ["int", "float", "str"]
+    answer: "float"
+    explanation: Число с дробной частью имеет тип float.
+  - question: Какие типы изменяемые?
+    options: ["list", "tuple", "dict", "str"]
+    answer: ["list", "dict"]
+    explanation: Кортежи и строки в Python неизменяемы.

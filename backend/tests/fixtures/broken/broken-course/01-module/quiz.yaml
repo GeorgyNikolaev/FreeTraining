@@ -1,0 +1,5 @@
+pass_score: 70
+questions:
+  - question: Вопрос с неверным ответом
+    options: ["a", "b"]
+    answer: "c"
