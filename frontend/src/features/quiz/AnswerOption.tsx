@@ -41,7 +41,7 @@ export function AnswerOption({
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
-        className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
+        className="mt-0.5 size-4 shrink-0 accent-[var(--accent)] disabled:accent-[var(--text-subtle)]"
       />
       <span className="min-w-0">{label}</span>
     </label>

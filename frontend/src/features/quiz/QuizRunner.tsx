@@ -115,7 +115,6 @@ export function QuizRunner({ quiz }: { quiz: QuizPublic }) {
       {reviewing ? null : (
         <div className="flex items-center gap-4 border-t border-line pt-6">
           <Button
-            variant="secondary"
             size="lg"
             onClick={check}
             disabled={!answered || submit.isPending}

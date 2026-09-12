@@ -68,6 +68,22 @@ describe("QuizRunner", () => {
     );
   });
 
+  it("блокирует варианты ответа после проверки", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<QuizRunner quiz={quizPublic} />);
+
+    expect(screen.getByRole("radio", { name: "Отступами" })).toBeEnabled();
+
+    await user.click(screen.getByRole("radio", { name: "Отступами" }));
+    await user.click(screen.getByRole("checkbox", { name: "Требует сборки" }));
+    await user.click(screen.getByRole("button", { name: "Проверить" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("radio", { name: "Отступами" })).toBeDisabled(),
+    );
+    expect(screen.getByRole("checkbox", { name: "Требует сборки" })).toBeDisabled();
+  });
+
   it("показывает итог и пояснения после проверки", async () => {
     const user = userEvent.setup();
     renderWithProviders(<QuizRunner quiz={quizPublic} />);
