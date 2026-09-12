@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -89,3 +90,43 @@ class PageDetail(BaseModel):
     page: str
     title: str
     content: str
+
+
+QuizScope = Literal["module", "exam"]
+
+
+class QuizQuestionPublic(BaseModel):
+    index: int
+    question: str
+    options: list[str]
+    multiple: bool
+
+
+class QuizPublic(BaseModel):
+    course_id: str
+    scope: QuizScope
+    module_id: str | None = None
+    title: str
+    pass_score: int
+    questions: list[QuizQuestionPublic]
+
+
+class QuizSubmission(BaseModel):
+    course_id: str
+    scope: QuizScope
+    module_id: str | None = None
+    answers: list[list[str]]
+
+
+class QuizResult(BaseModel):
+    attempt_id: int
+    course_id: str
+    scope: QuizScope
+    module_id: str | None = None
+    total_questions: int
+    correct_count: int
+    score_percent: int
+    passed: bool
+    pass_score: int
+    results: list[QuestionResult]
+    created_at: datetime
