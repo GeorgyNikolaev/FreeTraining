@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
+import type { LessonDetail } from "../lib/api/types";
 import { lastLessonDetail, lessonDetail } from "../test/mocks";
 import { renderWithProviders } from "../test/render";
 import { server } from "../test/server";
@@ -102,9 +103,9 @@ describe("LessonPage", () => {
 
     renderPage("/courses/python-basics/01-introduction/02-installation");
 
-    const article = await screen.findByRole("article");
+    const article = screen.getByRole("article");
     expect(
-      within(article).getByRole("link", { name: /Что такое Python/ }),
+      await within(article).findByRole("link", { name: /Что такое Python/ }),
     ).toBeInTheDocument();
   });
 
@@ -156,6 +157,43 @@ describe("LessonPage", () => {
     expect(
       screen.getAllByRole("navigation", { name: "Содержание курса" }),
     ).toHaveLength(2);
+  });
+
+  it("не убирает сайдбар и крошки, пока текст урока ещё грузится", async () => {
+    let resolveLesson: (value: LessonDetail) => void = () => {};
+    server.use(
+      http.get(
+        "/api/courses/:course/lessons/:module/:lesson",
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveLesson = (value) => resolve(HttpResponse.json(value));
+          }),
+      ),
+    );
+
+    renderPage();
+
+    // Пока урок грузится, дерево модулей и крошки уже на месте — они
+    // построены из данных курса, которые не зависят от запроса урока.
+    expect(
+      await screen.findByRole("navigation", { name: "Содержание курса" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Основы Python")).toBeInTheDocument();
+
+    const article = screen.getByRole("article");
+    expect(article.querySelector(".animate-pulse")).not.toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Что такое Python", level: 1 }),
+    ).not.toBeInTheDocument();
+
+    resolveLesson(lessonDetail);
+
+    expect(
+      await screen.findByRole("heading", { name: "Что такое Python", level: 1 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Содержание курса" }),
+    ).toBeInTheDocument();
   });
 
   it("показывает понятную ошибку, когда урока нет", async () => {
