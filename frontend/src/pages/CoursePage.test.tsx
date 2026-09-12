@@ -41,9 +41,9 @@ describe("CoursePage", () => {
   it("ведёт на тест модуля и показывает лучший результат", async () => {
     renderPage();
 
-    const quizLinks = await screen.findAllByRole("link", { name: /Тест модуля/ });
-    expect(quizLinks.length).toBeGreaterThan(0);
-    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("link", { name: /Тест модуля.*100%/ }),
+    ).toBeInTheDocument();
   });
 
   it("показывает кнопку продолжения, когда есть место остановки", async () => {
