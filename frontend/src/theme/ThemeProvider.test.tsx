@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { setPrefersDark } from "../../vitest.setup";
 import { ThemeProvider, useTheme } from "./ThemeProvider";
 
 function Probe() {
@@ -17,9 +18,12 @@ describe("ThemeProvider", () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.removeAttribute("data-theme");
+    setPrefersDark(false);
   });
 
-  it("по умолчанию берёт светлую тему, когда система её не переопределяет", () => {
+  it("по умолчанию берёт светлую тему, когда система предпочитает светлую", () => {
+    setPrefersDark(false);
+
     render(
       <ThemeProvider>
         <Probe />
@@ -28,6 +32,32 @@ describe("ThemeProvider", () => {
 
     expect(screen.getByRole("button")).toHaveTextContent("тема: light");
     expect(document.documentElement.dataset.theme).toBe("light");
+  });
+
+  it("берёт тёмную тему, когда система её предпочитает и сохранённого выбора нет", () => {
+    setPrefersDark(true);
+
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByRole("button")).toHaveTextContent("тема: dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  it("сохранённый выбор побеждает системную настройку", () => {
+    localStorage.setItem("freetraining-theme", "light");
+    setPrefersDark(true);
+
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByRole("button")).toHaveTextContent("тема: light");
   });
 
   it("переключает тему и запоминает выбор", async () => {

@@ -26,7 +26,9 @@ function readStoredTheme(): Theme | null {
 }
 
 function systemTheme(): Theme {
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  // В браузере window.matchMedia есть всегда; в тестах его подставляет
+  // заглушка из vitest.setup.ts. Не скрываем отсутствие API за `?.`.
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
