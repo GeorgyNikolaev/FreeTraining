@@ -1,0 +1,331 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------- Слой 1: примитивы ---------- */
+:root {
+  --neutral-0: #ffffff;
+  --neutral-50: #fafafa;
+  --neutral-100: #f4f4f5;
+  --neutral-200: #e4e4e7;
+  --neutral-300: #d4d4d8;
+  --neutral-500: #71717a;
+  --neutral-600: #52525b;
+  --neutral-700: #3f3f46;
+  --neutral-800: #27272a;
+  --neutral-900: #18181b;
+  --neutral-950: #0b0b0d;
+
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+
+  --green-deep: #0f7a5f;
+  --green-deep-hover: #0c6350;
+  --green-soft: #4eb894;
+  --green-soft-hover: #3fa885;
+
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+
+  --amber-500: #f59e0b;
+  --amber-700: #b45309;
+}
+
+/* ---------- Слой 2: смысловые токены, светлая тема ---------- */
+:root {
+  --surface: var(--neutral-50);
+  --raised: var(--neutral-0);
+  --sunken: var(--neutral-100);
+  --skeleton: var(--neutral-200);
+
+  --text: var(--neutral-900);
+  --text-muted: var(--neutral-600);
+  --text-subtle: var(--neutral-500);
+  --text-on-accent: var(--neutral-0);
+
+  --line: var(--neutral-200);
+  --line-strong: var(--neutral-300);
+
+  --accent: var(--green-deep);
+  --accent-hover: var(--green-deep-hover);
+  --accent-soft: color-mix(in srgb, var(--green-deep) 12%, transparent);
+
+  --success: var(--emerald-600);
+  --success-soft: color-mix(in srgb, var(--emerald-500) 12%, transparent);
+  --danger: var(--red-600);
+  --danger-soft: color-mix(in srgb, var(--red-500) 12%, transparent);
+  --warning: var(--amber-700);
+
+  --ring: color-mix(in srgb, var(--green-deep) 55%, transparent);
+
+  --glass-bg: color-mix(in srgb, var(--neutral-0) 72%, transparent);
+  --glass-line: color-mix(in srgb, var(--neutral-900) 8%, transparent);
+  --glass-blur: 20px;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 6%);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 5%), 0 12px 28px rgb(0 0 0 / 10%);
+  --top-light: transparent;
+}
+
+/* ---------- Слой 2: смысловые токены, тёмная тема ---------- */
+[data-theme="dark"] {
+  --surface: var(--neutral-950);
+  --raised: var(--neutral-900);
+  --sunken: var(--neutral-800);
+  --skeleton: var(--neutral-800);
+
+  --text: var(--neutral-100);
+  --text-muted: var(--neutral-300);
+  --text-subtle: var(--neutral-500);
+  --text-on-accent: var(--neutral-950);
+
+  --line: var(--neutral-800);
+  --line-strong: var(--neutral-700);
+
+  --accent: var(--green-soft);
+  --accent-hover: var(--green-soft-hover);
+  --accent-soft: color-mix(in srgb, var(--green-soft) 16%, transparent);
+
+  --success: var(--emerald-400);
+  --success-soft: color-mix(in srgb, var(--emerald-400) 16%, transparent);
+  --danger: var(--red-400);
+  --danger-soft: color-mix(in srgb, var(--red-400) 16%, transparent);
+  --warning: var(--amber-500);
+
+  --ring: color-mix(in srgb, var(--green-soft) 55%, transparent);
+
+  --glass-bg: color-mix(in srgb, var(--neutral-900) 62%, transparent);
+  --glass-line: color-mix(in srgb, var(--neutral-0) 10%, transparent);
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-lift: 0 12px 32px rgb(0 0 0 / 50%);
+  /* В тёмной теме тени не читаются: глубину даёт светлая грань сверху */
+  --top-light: inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+/* ---------- Слой 3: связь токенов с Tailwind ---------- */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-skeleton: var(--skeleton);
+  --color-body: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-on-accent: var(--text-on-accent);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-panel: 20px;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter",
+    "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  --text-reading: 1.125rem;
+  --text-reading--line-height: 1.7;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+}
+
+/* ---------- Основа ---------- */
+html {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Стекло: только шапка, навигация, выдвижная панель ---------- */
+@utility glass {
+  /* Запасной вариант идёт первым: без поддержки размытия остаётся плотный фон */
+  background-color: var(--raised);
+  border-color: var(--glass-line);
+  box-shadow: var(--top-light);
+
+  @supports (backdrop-filter: blur(1px)) {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  }
+}
+
+/* ---------- Оформление текста урока ---------- */
+@utility prose-lesson {
+  color: var(--text);
+  font-size: var(--text-reading);
+  line-height: 1.7;
+  max-width: 68ch;
+
+  & h1 {
+    font-size: 1.875rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    margin-block: 0 24px;
+  }
+  & h2 {
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-block: 48px 16px;
+  }
+  & h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-block: 32px 12px;
+  }
+  & p {
+    margin-block: 0 24px;
+  }
+  & ul,
+  & ol {
+    margin-block: 0 24px;
+    padding-inline-start: 24px;
+  }
+  & li {
+    margin-block: 8px;
+  }
+  & li::marker {
+    color: var(--text-subtle);
+  }
+  & a {
+    color: var(--accent);
+    text-underline-offset: 3px;
+  }
+  & strong {
+    font-weight: 650;
+  }
+  & blockquote {
+    margin-block: 0 24px;
+    padding-inline-start: 16px;
+    border-inline-start: 3px solid var(--line-strong);
+    color: var(--text-muted);
+  }
+  & code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background-color: var(--sunken);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  & pre {
+    margin-block: 0 24px;
+    padding: 16px;
+    border-radius: var(--radius-card);
+    background-color: var(--sunken);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  & pre code {
+    background-color: transparent;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  & table {
+    width: 100%;
+    margin-block: 0 24px;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+  & th,
+  & td {
+    text-align: start;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  & th {
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  & img {
+    max-width: 100%;
+    border-radius: var(--radius-card);
+  }
+}
+
+/* ---------- Подсветка кода: те же токены, без внешней темы ---------- */
+.hljs-comment,
+.hljs-quote {
+  color: var(--text-subtle);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-built_in {
+  color: var(--accent);
+}
+.hljs-string,
+.hljs-attr,
+.hljs-addition {
+  color: var(--success);
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-deletion {
+  color: var(--danger);
+}
+.hljs-title,
+.hljs-section,
+.hljs-name {
+  color: var(--text);
+  font-weight: 600;
+}
+.hljs-meta,
+.hljs-type,
+.hljs-params {
+  color: var(--text-muted);
+}
