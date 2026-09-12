@@ -1,4 +1,4 @@
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Stethoscope } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
@@ -20,7 +20,18 @@ export function Layout({ children }: { children: ReactNode }) {
             <GraduationCap size={20} className="text-accent" />
             FreeTraining
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link
+              to="/health"
+              title="Состояние содержимого"
+              className="inline-flex size-9 items-center justify-center rounded-control
+                border border-line text-muted transition-colors duration-150
+                hover:bg-sunken hover:text-body"
+            >
+              <Stethoscope size={18} />
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
