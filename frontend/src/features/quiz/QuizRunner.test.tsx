@@ -113,6 +113,21 @@ describe("QuizRunner", () => {
     expect(screen.getByRole("button", { name: "Проверить" })).toBeDisabled();
   });
 
+  it("называет правильный ответ в разборе неверного вопроса", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<QuizRunner quiz={quizPublic} />);
+
+    await user.click(screen.getByRole("radio", { name: "Отступами" }));
+    await user.click(screen.getByRole("checkbox", { name: "Требует сборки" }));
+    await user.click(screen.getByRole("button", { name: "Проверить" }));
+
+    expect(
+      await screen.findByText(
+        "Правильный ответ: Интерпретируемый язык, Язык общего назначения",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("сообщает об ошибке отправки, не теряя выбранные ответы", async () => {
     server.use(
       http.post("/api/quizzes/submit", () =>

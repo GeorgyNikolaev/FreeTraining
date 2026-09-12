@@ -9,7 +9,7 @@ import { Callout } from "../components/ui/Callout";
 import { Card, CardBody } from "../components/ui/Card";
 import { EmptyState } from "../components/ui/EmptyState";
 import { useAttempts, useCourse } from "../lib/api/queries";
-import type { AttemptSummary } from "../lib/api/types";
+import type { AttemptSummary, CourseDetail } from "../lib/api/types";
 
 function formatMoment(value: string): string {
   return new Date(value).toLocaleString("ru-RU", {
@@ -20,8 +20,17 @@ function formatMoment(value: string): string {
   });
 }
 
-function AttemptCard({ attempt }: { attempt: AttemptSummary }) {
+function AttemptCard({
+  attempt,
+  course,
+}: {
+  attempt: AttemptSummary;
+  course?: CourseDetail;
+}) {
   const [open, setOpen] = useState(false);
+  const moduleTitle = attempt.module_id
+    ? course?.modules.find((module) => module.id === attempt.module_id)?.title
+    : undefined;
 
   return (
     <Card>
@@ -30,9 +39,7 @@ function AttemptCard({ attempt }: { attempt: AttemptSummary }) {
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium">
               {attempt.scope === "exam" ? "Финальный экзамен" : "Тест модуля"}
-              {attempt.module_id ? (
-                <span className="text-muted"> · {attempt.module_id}</span>
-              ) : null}
+              {moduleTitle ? <span className="text-muted"> · {moduleTitle}</span> : null}
             </p>
             <p className="text-xs text-subtle">{formatMoment(attempt.created_at)}</p>
           </div>
@@ -100,7 +107,7 @@ export function ResultsPage() {
         {attempts.data && attempts.data.length > 0 ? (
           <div className="flex flex-col gap-4">
             {attempts.data.map((attempt) => (
-              <AttemptCard key={attempt.id} attempt={attempt} />
+              <AttemptCard key={attempt.id} attempt={attempt} course={course.data} />
             ))}
           </div>
         ) : (

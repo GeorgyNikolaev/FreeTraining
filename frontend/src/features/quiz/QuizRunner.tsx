@@ -98,6 +98,11 @@ export function QuizRunner({ quiz }: { quiz: QuizPublic }) {
                   tone={review.is_correct ? "success" : "danger"}
                   title={review.is_correct ? "Верно" : "Неверно"}
                 >
+                  {review.is_correct ? null : (
+                    <p className="mb-2">
+                      Правильный ответ: {review.correct_answer.join(", ")}
+                    </p>
+                  )}
                   {review.explanation}
                 </Callout>
               ) : null}

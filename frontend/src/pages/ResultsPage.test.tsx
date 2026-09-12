@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
+import { attempts } from "../test/mocks";
 import { renderWithProviders } from "../test/render";
 import { server } from "../test/server";
 import { ResultsPage } from "./ResultsPage";
@@ -15,7 +16,7 @@ function renderPage() {
 }
 
 describe("ResultsPage", () => {
-  it("показывает попытки, новые сверху", async () => {
+  it("показывает попытки в том порядке, в котором их прислал сервер", async () => {
     renderPage();
 
     const scores = await screen.findAllByTestId("attempt-score");
@@ -48,5 +49,25 @@ describe("ResultsPage", () => {
     renderPage();
 
     expect(await screen.findByText("Попыток пока нет")).toBeInTheDocument();
+  });
+
+  it("показывает название модуля, а не идентификатор папки", async () => {
+    renderPage();
+
+    expect((await screen.findAllByText(/Введение/)).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/01-introduction/)).toBeNull();
+  });
+
+  it("скрывает подпись модуля, если модуль не найден в курсе", async () => {
+    server.use(
+      http.get("/api/progress/attempts/:course", () =>
+        HttpResponse.json([{ ...attempts[0], module_id: "removed-module" }]),
+      ),
+    );
+
+    renderPage();
+
+    await screen.findAllByTestId("attempt-score");
+    expect(screen.queryByText(/removed-module/)).toBeNull();
   });
 });
