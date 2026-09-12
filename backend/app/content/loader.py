@@ -22,6 +22,7 @@ class ContentError:
 class LoadResult:
     courses: list[Course] = field(default_factory=list)
     errors: list[ContentError] = field(default_factory=list)
+    warnings: list[ContentError] = field(default_factory=list)
 
 
 class CourseLoadError(Exception):
@@ -86,8 +87,17 @@ def _load_quiz(
     return None
 
 
+def _is_module_dir(path: Path) -> bool:
+    if (path / "module.yaml").exists():
+        return True
+    return any(path.glob("*.md"))
+
+
 def _load_module(
-    module_dir: Path, course_id: str, errors: list[ContentError]
+    module_dir: Path,
+    course_id: str,
+    errors: list[ContentError],
+    warnings: list[ContentError],
 ) -> Module | None:
     module_file = module_dir / "module.yaml"
     if not module_file.exists():
@@ -107,7 +117,16 @@ def _load_module(
     lessons: list[Lesson] = []
     for lesson_file in sorted(module_dir.glob("*.md")):
         text = lesson_file.read_text(encoding="utf-8")
-        lesson_title = extract_title(text) or humanize(lesson_file.stem)
+        heading = extract_title(text)
+        lesson_title = heading or humanize(lesson_file.stem)
+        if heading is None:
+            warnings.append(
+                ContentError(
+                    course_id,
+                    f"{module_dir.name}/{lesson_file.name}",
+                    "нет заголовка первого уровня, название взято из имени файла",
+                )
+            )
         lessons.append(Lesson(id=lesson_file.stem, title=lesson_title, path=lesson_file))
 
     if not lessons:
@@ -122,10 +141,14 @@ def _load_module(
     return Module(id=module_dir.name, title=title, lessons=lessons, quiz=quiz)
 
 
-def load_course(course_dir: Path) -> Course:
+def load_course(
+    course_dir: Path, warnings: list[ContentError] | None = None
+) -> Course:
     """Читает курс из папки. Бросает CourseLoadError со списком понятных ошибок."""
     course_id = course_dir.name
     errors: list[ContentError] = []
+    if warnings is None:
+        warnings = []
 
     course_file = course_dir / "course.yaml"
     if not course_file.exists():
@@ -145,10 +168,12 @@ def load_course(course_dir: Path) -> Course:
 
     modules: list[Module] = []
     course_subdirs = sorted(
-        p for p in course_dir.iterdir() if p.is_dir() and not p.name.startswith(".")
+        p
+        for p in course_dir.iterdir()
+        if p.is_dir() and not p.name.startswith(".") and _is_module_dir(p)
     )
     for module_dir in course_subdirs:
-        module = _load_module(module_dir, course_id, errors)
+        module = _load_module(module_dir, course_id, errors, warnings)
         if module is not None:
             modules.append(module)
 
@@ -192,10 +217,14 @@ def load_courses(content_dir: Path) -> LoadResult:
         p for p in content_dir.iterdir() if p.is_dir() and not p.name.startswith(".")
     )
     for course_dir in content_subdirs:
+        course_warnings: list[ContentError] = []
         try:
-            result.courses.append(load_course(course_dir))
+            course = load_course(course_dir, course_warnings)
         except CourseLoadError as exc:
             result.errors.extend(exc.errors)
+            continue
+        result.courses.append(course)
+        result.warnings.extend(course_warnings)
     return result
 
 

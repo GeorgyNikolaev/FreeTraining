@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from app.content.loader import (
+    ContentError,
     CourseLoadError,
     load_course,
     load_courses,
@@ -27,6 +28,11 @@ def test_extract_title_ignores_second_level_heading():
 def test_extract_title_ignores_heading_inside_code_block():
     text = "```python\n# это комментарий\n```\n"
     assert extract_title(text) is None
+
+
+def test_extract_title_found_after_code_block():
+    text = "```python\n# это комментарий\n```\n\n# Заголовок\n\nТекст"
+    assert extract_title(text) == "Заголовок"
 
 
 def test_humanize_strips_numeric_prefix():
@@ -142,7 +148,9 @@ def test_load_course_missing_module_yaml_is_reported(tmp_path):
     course_dir = tmp_path / "course"
     course_dir.mkdir()
     (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
-    (course_dir / "01-module").mkdir()
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
 
     with pytest.raises(CourseLoadError) as error:
         load_course(course_dir)
@@ -221,6 +229,76 @@ def test_load_course_rejects_invalid_level(tmp_path):
     assert len(errors) == 1
     assert errors[0].location == "course.yaml"
     assert "недопустимое значение" in errors[0].message
+
+
+def test_lesson_without_heading_gets_a_warning(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("Текст без заголовка.\n", encoding="utf-8")
+
+    warnings: list[ContentError] = []
+    course = load_course(course_dir, warnings)
+
+    assert course.modules[0].lessons[0].title == "Lesson"
+    assert len(warnings) == 1
+    assert warnings[0].location == "01-module/01-lesson.md"
+    assert warnings[0].message == "нет заголовка первого уровня, название взято из имени файла"
+
+
+def test_load_courses_collects_warnings_without_dropping_course(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("Текст без заголовка.\n", encoding="utf-8")
+
+    result = load_courses(tmp_path)
+
+    assert [course.id for course in result.courses] == ["course"]
+    assert result.errors == []
+    assert len(result.warnings) == 1
+    assert result.warnings[0].course_id == "course"
+
+
+def test_non_module_subdirectory_is_ignored(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+
+    images_dir = course_dir / "images"
+    images_dir.mkdir()
+    (images_dir / "picture.png").write_bytes(b"\x89PNG")
+
+    course = load_course(course_dir)
+
+    assert [module.id for module in course.modules] == ["01-module"]
+
+
+def test_subdirectory_with_markdown_but_no_module_yaml_still_errors(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    stray_dir = course_dir / "stray"
+    stray_dir.mkdir()
+    (stray_dir / "notes.md").write_text("# Заметки\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "stray/module.yaml"
+    assert errors[0].message == "файл не найден"
 
 
 def test_load_course_rejects_pass_score_above_hundred(tmp_path):

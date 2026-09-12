@@ -127,6 +127,21 @@ async def test_wrong_number_of_answers_returns_422(client):
     assert "число ответов" in response.json()["detail"]
 
 
+async def test_submit_with_path_traversal_course_id_returns_404(client):
+    response = await client.post(
+        "/api/quizzes/submit",
+        json={
+            "course_id": "../../../../tmp",
+            "scope": "module",
+            "module_id": "01-basics",
+            "answers": [["что угодно"]],
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Курс не найден"
+
+
 async def test_submit_to_missing_quiz_returns_404(client):
     response = await client.post(
         "/api/quizzes/submit",

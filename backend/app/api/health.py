@@ -26,4 +26,12 @@ async def content_health(content_dir: ContentDep) -> ContentHealth:
             )
             for error in result.errors
         ],
+        warnings=[
+            ContentErrorOut(
+                course_id=warning.course_id,
+                location=warning.location,
+                message=warning.message,
+            )
+            for warning in result.warnings
+        ],
     )

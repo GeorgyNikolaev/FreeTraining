@@ -34,6 +34,8 @@ UserDep = Annotated[str, Depends(get_user_id)]
 
 
 def get_course_or_404(content_dir: Path, course_id: str) -> Course:
+    if not course_id or course_id in {".", ".."} or "/" in course_id or "\\" in course_id:
+        raise HTTPException(status_code=404, detail="Курс не найден")
     course_dir = content_dir / course_id
     if not course_dir.is_dir():
         raise HTTPException(status_code=404, detail="Курс не найден")

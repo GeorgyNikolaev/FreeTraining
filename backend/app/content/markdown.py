@@ -6,10 +6,14 @@ PREFIX = re.compile(r"^\d+[-_]")
 
 def extract_title(text: str) -> str | None:
     """Возвращает первый заголовок первого уровня, не заглядывая внутрь блоков кода."""
+    in_code_block = False
     for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith("```"):
-            return None
+            in_code_block = not in_code_block
+            continue
+        if in_code_block:
+            continue
         match = HEADING.match(stripped)
         if match:
             return match.group("title")

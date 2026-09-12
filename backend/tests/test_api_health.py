@@ -13,6 +13,23 @@ async def test_healthy_content_reports_no_errors(client):
     assert body["ok"] is True
     assert body["course_count"] == 1
     assert body["errors"] == []
+    assert body["warnings"] == []
+
+
+@pytest.mark.parametrize("content_dir", [FIXTURES / "warning"])
+async def test_lesson_without_heading_is_reported_as_warning_without_failing(
+    client, content_dir
+):
+    response = await client.get("/api/health/content")
+
+    body = response.json()
+    assert body["ok"] is True
+    assert body["course_count"] == 1
+    assert len(body["warnings"]) == 1
+    assert body["warnings"][0]["course_id"] == "no-heading-course"
+    assert body["warnings"][0]["message"] == (
+        "нет заголовка первого уровня, название взято из имени файла"
+    )
 
 
 @pytest.mark.parametrize("content_dir", [FIXTURES / "broken"])

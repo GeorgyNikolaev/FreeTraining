@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from app.content.loader import load_course
@@ -156,6 +157,37 @@ async def test_fully_completed_course(session):
     assert progress.done_units == progress.total_units
     assert progress.percent == 100
     assert progress.status == "completed"
+
+
+async def test_exam_attempt_is_not_counted_when_exam_was_removed(session, tmp_path):
+    course_dir = tmp_path / "demo-course"
+    shutil.copytree(FIXTURES / "content" / "demo-course", course_dir)
+    (course_dir / "exam.yaml").unlink()
+    course = load_course(course_dir)
+    assert course.exam is None
+
+    session.add(
+        QuizAttempt(
+            user_id="local",
+            course_id="demo-course",
+            scope="exam",
+            module_id=None,
+            total_questions=1,
+            correct_count=1,
+            score_percent=100,
+            passed=True,
+            answers=[],
+        )
+    )
+    await session.commit()
+
+    progress = await load_course_progress(session, "local", course)
+
+    assert progress.exam_passed is True
+    assert progress.total_units == course.lesson_count + course.quiz_count
+    assert progress.done_units == 0
+    assert progress.percent <= 100
+    assert progress.status != "completed"
 
 
 async def test_progress_for_removed_lesson_is_not_counted(session):

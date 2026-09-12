@@ -183,3 +183,4 @@ class ContentHealth(BaseModel):
     ok: bool
     course_count: int
     errors: list[ContentErrorOut]
+    warnings: list[ContentErrorOut]

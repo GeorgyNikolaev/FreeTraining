@@ -80,7 +80,8 @@ async def load_course_progress(
     done_quizzes = sum(
         1 for module in course.modules if module.quiz is not None and module.id in module_passed
     )
-    done_units = len(completed) + done_quizzes + (1 if exam_passed else 0)
+    done_exam = 1 if course.exam is not None and exam_passed else 0
+    done_units = len(completed) + done_quizzes + done_exam
     percent = round(done_units * 100 / total_units) if total_units else 0
 
     resume = (position.module_id, position.lesson_id) if position else None
