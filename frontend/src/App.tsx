@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router";
 
 import { Layout } from "./components/Layout";
+import { CoursePage } from "./pages/CoursePage";
 import { DesignPage } from "./pages/DesignPage";
 import { HomePage } from "./pages/HomePage";
 
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/design" element={<DesignPage />} />
+        <Route path="/courses/:courseId" element={<CoursePage />} />
         <Route path="*" element={<Placeholder title="Страница не найдена" />} />
       </Routes>
     </Layout>
