@@ -123,3 +123,127 @@ def test_read_page_text():
 
     assert "Краткая выжимка" in (read_page_text(course, "cheatsheet") or "")
     assert read_page_text(course, "glossary") is None
+
+
+def test_load_course_missing_course_yaml_is_reported(tmp_path):
+    course_dir = tmp_path / "no-metadata"
+    course_dir.mkdir()
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "course.yaml"
+    assert errors[0].message == "файл не найден"
+
+
+def test_load_course_missing_module_yaml_is_reported(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    (course_dir / "01-module").mkdir()
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "01-module/module.yaml"
+    assert errors[0].message == "файл не найден"
+
+
+def test_load_course_rejects_broken_yaml_syntax(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: [не закрыт\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "course.yaml"
+    assert errors[0].message.startswith("некорректный YAML")
+
+
+def test_load_course_rejects_quiz_that_is_not_a_mapping(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+    (module_dir / "quiz.yaml").write_text("- просто список\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "01-module/quiz.yaml"
+    assert errors[0].message == "ожидался набор полей вида ключ: значение"
+
+
+def test_load_course_rejects_module_without_lessons(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "01-module"
+    assert errors[0].message == "в модуле нет ни одного урока"
+
+
+def test_load_course_rejects_invalid_level(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text(
+        "title: Курс\nlevel: невозможный\n", encoding="utf-8"
+    )
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "course.yaml"
+    assert "недопустимое значение" in errors[0].message
+
+
+def test_load_course_rejects_pass_score_above_hundred(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+    (module_dir / "quiz.yaml").write_text(
+        'pass_score: 120\n'
+        'questions:\n'
+        '  - question: Вопрос\n'
+        '    options: ["a", "b"]\n'
+        '    answer: "a"\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert len(errors) == 1
+    assert errors[0].location == "01-module/quiz.yaml"
+    assert "значение должно быть не больше 100" in errors[0].message

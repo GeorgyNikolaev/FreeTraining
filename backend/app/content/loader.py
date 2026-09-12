@@ -30,11 +30,32 @@ class CourseLoadError(Exception):
         super().__init__("; ".join(error.message for error in errors))
 
 
+def _translate(item: dict[str, Any]) -> str:
+    error_type = item["type"]
+    ctx = item.get("ctx") or {}
+
+    if error_type == "literal_error":
+        expected = ctx.get("expected")
+        if not expected:
+            return "недопустимое значение"
+        options = str(expected).replace("'", "").replace(" or ", ", ")
+        return f"недопустимое значение, ожидается одно из: {options}"
+    if error_type == "less_than_equal":
+        return f"значение должно быть не больше {ctx['le']}"
+    if error_type == "greater_than_equal":
+        return f"значение должно быть не меньше {ctx['ge']}"
+    if error_type == "too_short":
+        return f"нужно не меньше {ctx['min_length']} элементов"
+    if error_type == "missing":
+        return "поле не заполнено"
+    return item["msg"].removeprefix("Value error, ")
+
+
 def _describe(error: ValidationError) -> str:
     parts = []
     for item in error.errors():
         location = ".".join(str(piece) for piece in item["loc"]) or "файл"
-        message = item["msg"].removeprefix("Value error, ")
+        message = _translate(item)
         parts.append(f"{location}: {message}")
     return "; ".join(parts)
 
@@ -112,7 +133,11 @@ def load_course(course_dir: Path) -> Course:
 
     try:
         meta = _read_yaml(course_file)
-    except (yaml.YAMLError, ValueError) as exc:
+    except yaml.YAMLError as exc:
+        raise CourseLoadError(
+            [ContentError(course_id, "course.yaml", f"некорректный YAML: {exc}")]
+        ) from exc
+    except ValueError as exc:
         raise CourseLoadError([ContentError(course_id, "course.yaml", str(exc))]) from exc
 
     if not meta.get("title"):
