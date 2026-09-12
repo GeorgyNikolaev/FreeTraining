@@ -4,7 +4,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={clsx("animate-pulse rounded-control bg-sunken", className)}
+      className={clsx("animate-pulse rounded-control bg-skeleton", className)}
     />
   );
 }

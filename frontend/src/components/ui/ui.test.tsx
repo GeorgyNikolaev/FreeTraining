@@ -11,6 +11,7 @@ import { Card, CardTitle } from "./Card";
 import { EmptyState } from "./EmptyState";
 import { ProgressBar } from "./ProgressBar";
 import { ProgressRing } from "./ProgressRing";
+import { Skeleton } from "./Skeleton";
 import { Tabs } from "./Tabs";
 
 describe("Button", () => {
@@ -101,6 +102,14 @@ describe("Breadcrumbs", () => {
 
     expect(screen.getByRole("link", { name: "Курсы" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Переменные" })).not.toBeInTheDocument();
+  });
+});
+
+describe("Skeleton", () => {
+  it("отрисовывается с классом фона заглушки", () => {
+    const { container } = render(<Skeleton className="h-4 w-full" />);
+
+    expect(container.firstChild).toHaveClass("bg-skeleton");
   });
 });
 
