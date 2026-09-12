@@ -34,7 +34,11 @@ function CodeBlock({
  * разбора не переносится по строкам. Поэтому для схемы `<pre>` не
  * рисуется вовсе — сразу отдаётся то, что вернул `CodeBlock`.
  */
-function PreBlock({ children, ...props }: ComponentPropsWithoutRef<"pre"> & ExtraProps) {
+function PreBlock({
+  children,
+  node: _node,
+  ...props
+}: ComponentPropsWithoutRef<"pre"> & ExtraProps) {
   const child = (Array.isArray(children) ? children[0] : children) as ReactNode;
   if (isValidElement(child)) {
     const childClassName = (child.props as { className?: string }).className;
