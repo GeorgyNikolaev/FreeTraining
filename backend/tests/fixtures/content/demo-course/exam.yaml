@@ -1,0 +1,6 @@
+pass_score: 80
+questions:
+  - question: Какой это курс?
+    options: ["Демонстрационный", "Настоящий"]
+    answer: "Демонстрационный"
+    explanation: Так написано в названии.
