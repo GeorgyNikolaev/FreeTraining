@@ -130,3 +130,44 @@ class QuizResult(BaseModel):
     pass_score: int
     results: list[QuestionResult]
     created_at: datetime
+
+
+class PositionInput(BaseModel):
+    module_id: str
+    lesson_id: str
+
+
+class LessonProgressOut(BaseModel):
+    course_id: str
+    module_id: str
+    lesson_id: str
+    completed: bool
+    completed_at: datetime
+
+
+class AttemptSummary(BaseModel):
+    id: int
+    course_id: str
+    scope: QuizScope
+    module_id: str | None = None
+    total_questions: int
+    correct_count: int
+    score_percent: int
+    passed: bool
+    created_at: datetime
+    results: list[QuestionResult]
+
+
+class PositionOut(BaseModel):
+    course_id: str
+    module_id: str
+    lesson_id: str
+    updated_at: datetime
+
+
+class ProgressExport(BaseModel):
+    user_id: str
+    exported_at: datetime
+    lessons: list[LessonProgressOut]
+    attempts: list[AttemptSummary]
+    positions: list[PositionOut]

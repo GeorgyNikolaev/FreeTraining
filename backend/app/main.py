@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import courses, quizzes
+from app.api import courses, progress, quizzes
 from app.config import settings
 from app.db import create_tables
 
@@ -27,6 +27,7 @@ app.add_middleware(
 
 app.include_router(courses.router)
 app.include_router(quizzes.router)
+app.include_router(progress.router)
 
 
 @app.get("/api/ping")
