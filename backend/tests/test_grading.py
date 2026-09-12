@@ -54,6 +54,13 @@ def test_score_below_pass_score_does_not_pass():
     assert outcome.passed is False
 
 
+def test_score_equal_to_pass_score_passes():
+    outcome = grade_quiz(build_quiz(pass_score=50), [["4"], ["list"]])
+
+    assert outcome.score_percent == 50
+    assert outcome.passed is True
+
+
 def test_empty_answer_is_wrong():
     outcome = grade_quiz(build_quiz(), [[], ["list", "dict"]])
 

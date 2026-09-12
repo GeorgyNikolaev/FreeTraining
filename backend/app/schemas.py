@@ -71,3 +71,21 @@ class CourseDetail(BaseModel):
     progress_percent: int
     status: str
     resume: ResumePosition | None = None
+
+
+class LessonDetail(BaseModel):
+    course_id: str
+    module_id: str
+    lesson_id: str
+    title: str
+    content: str
+    completed: bool
+    prev: StepLink | None = None
+    next: StepLink | None = None
+
+
+class PageDetail(BaseModel):
+    course_id: str
+    page: str
+    title: str
+    content: str

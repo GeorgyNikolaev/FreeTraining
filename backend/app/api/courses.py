@@ -4,16 +4,26 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.content.loader import CourseLoadError, load_course, load_courses
+from app.content.loader import (
+    CourseLoadError,
+    load_course,
+    load_courses,
+    read_lesson_text,
+    read_page_text,
+)
+from app.content.markdown import extract_title
 from app.content.models import Course
 from app.deps import get_content_dir, get_session, get_user_id
 from app.schemas import (
     CourseDetail,
     CourseSummary,
+    LessonDetail,
     LessonRef,
     ModuleDetail,
+    PageDetail,
     ResumePosition,
 )
+from app.services.navigation import neighbours
 from app.services.progress import CourseProgress, load_course_progress
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
@@ -117,4 +127,56 @@ async def get_course(
         progress_percent=progress.percent,
         status=progress.status,
         resume=build_resume(course, progress),
+    )
+
+
+@router.get("/{course_id}/lessons/{module_id}/{lesson_id}", response_model=LessonDetail)
+async def get_lesson(
+    course_id: str,
+    module_id: str,
+    lesson_id: str,
+    session: SessionDep,
+    content_dir: ContentDep,
+    user_id: UserDep,
+) -> LessonDetail:
+    course = get_course_or_404(content_dir, course_id)
+    text = read_lesson_text(course, module_id, lesson_id)
+    if text is None:
+        raise HTTPException(status_code=404, detail="Урок не найден")
+
+    title = next(
+        lesson.title
+        for module in course.modules
+        if module.id == module_id
+        for lesson in module.lessons
+        if lesson.id == lesson_id
+    )
+    progress = await load_course_progress(session, user_id, course)
+    previous, following = neighbours(course, module_id, lesson_id)
+
+    return LessonDetail(
+        course_id=course.id,
+        module_id=module_id,
+        lesson_id=lesson_id,
+        title=title,
+        content=text,
+        completed=(module_id, lesson_id) in progress.completed_lessons,
+        prev=previous,
+        next=following,
+    )
+
+
+@router.get("/{course_id}/pages/{page}", response_model=PageDetail)
+async def get_page(course_id: str, page: str, content_dir: ContentDep) -> PageDetail:
+    course = get_course_or_404(content_dir, course_id)
+    text = read_page_text(course, page)
+    if text is None:
+        raise HTTPException(status_code=404, detail="Страница не найдена")
+
+    titles = {"cheatsheet": "Шпаргалка", "glossary": "Термины"}
+    return PageDetail(
+        course_id=course.id,
+        page=page,
+        title=extract_title(text) or titles.get(page, page),
+        content=text,
     )
