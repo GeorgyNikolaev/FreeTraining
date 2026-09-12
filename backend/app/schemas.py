@@ -171,3 +171,15 @@ class ProgressExport(BaseModel):
     lessons: list[LessonProgressOut]
     attempts: list[AttemptSummary]
     positions: list[PositionOut]
+
+
+class ContentErrorOut(BaseModel):
+    course_id: str
+    location: str
+    message: str
+
+
+class ContentHealth(BaseModel):
+    ok: bool
+    course_count: int
+    errors: list[ContentErrorOut]
