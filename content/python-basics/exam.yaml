@@ -1,0 +1,17 @@
+pass_score: 80
+questions:
+  - question: Чем выделяются блоки кода в Python?
+    options: ["Отступами", "Фигурными скобками", "Точкой с запятой"]
+    answer: "Отступами"
+    explanation: Отступ — часть синтаксиса языка.
+  - question: Какой тип у значения True?
+    options: ["bool", "int", "str"]
+    answer: "bool"
+    explanation: True и False имеют тип bool.
+  - question: Какие утверждения верны?
+    options:
+      - "Список изменяемый"
+      - "Кортеж изменяемый"
+      - "Словарь изменяемый"
+    answer: ["Список изменяемый", "Словарь изменяемый"]
+    explanation: Кортеж неизменяем.
