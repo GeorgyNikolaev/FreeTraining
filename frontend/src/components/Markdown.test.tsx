@@ -31,4 +31,23 @@ describe("Markdown", () => {
     expect(codeElement).toBeInTheDocument();
     expect(codeElement).toHaveTextContent("print('привет')");
   });
+
+  it("не оборачивает схему в блок кода pre", () => {
+    const content = ["```mermaid", "graph TD;", "  A-->B;", "```"].join("\n");
+
+    render(<Markdown content={content} />);
+
+    const mock = screen.getByTestId("mermaid-mock");
+    expect(mock.closest("pre")).toBeNull();
+    expect(document.querySelector("pre")).not.toBeInTheDocument();
+  });
+
+  it("по-прежнему оборачивает обычный блок кода в pre", () => {
+    const content = ["```python", "print('привет')", "```"].join("\n");
+
+    render(<Markdown content={content} />);
+
+    const codeElement = document.querySelector("code.language-python");
+    expect(codeElement?.closest("pre")).not.toBeNull();
+  });
 });
