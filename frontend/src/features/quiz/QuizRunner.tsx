@@ -1,4 +1,6 @@
+import { ArrowRight, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router";
 
 import { Callout } from "../../components/ui/Callout";
 import { Button } from "../../components/ui/Button";
@@ -6,6 +8,8 @@ import { useSubmitQuiz } from "../../lib/api/queries";
 import type { QuizPublic, QuizResult } from "../../lib/api/types";
 import { AnswerOption, type OptionState } from "./AnswerOption";
 import { ResultBanner } from "./ResultBanner";
+
+export type QuizNextStep = { href: string; label: string };
 
 function optionState(
   result: QuizResult | undefined,
@@ -25,7 +29,13 @@ function optionState(
   return "idle";
 }
 
-export function QuizRunner({ quiz }: { quiz: QuizPublic }) {
+export function QuizRunner({
+  quiz,
+  nextStep,
+}: {
+  quiz: QuizPublic;
+  nextStep?: QuizNextStep;
+}) {
   const [selections, setSelections] = useState<string[][]>(() =>
     quiz.questions.map(() => []),
   );
@@ -67,7 +77,7 @@ export function QuizRunner({ quiz }: { quiz: QuizPublic }) {
 
   return (
     <div className="flex flex-col gap-8">
-      {result ? <ResultBanner result={result} onRetry={retry} /> : null}
+      {result ? <ResultBanner result={result} /> : null}
 
       <ol className="flex flex-col gap-8">
         {quiz.questions.map((question, index) => {
@@ -117,20 +127,33 @@ export function QuizRunner({ quiz }: { quiz: QuizPublic }) {
         </Callout>
       ) : null}
 
-      {reviewing ? null : (
-        <div className="flex items-center gap-4 border-t border-line pt-6">
-          <Button
-            size="lg"
-            onClick={check}
-            disabled={!answered || submit.isPending}
-          >
-            Проверить
-          </Button>
-          {answered ? null : (
-            <span className="text-sm text-muted">Ответьте на все вопросы</span>
-          )}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
+        {reviewing ? (
+          <>
+            <Button variant="secondary" size="lg" onClick={retry}>
+              <RotateCcw size={16} />
+              Пройти заново
+            </Button>
+            {nextStep ? (
+              <Link to={nextStep.href}>
+                <Button size="lg">
+                  {nextStep.label}
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <Button size="lg" onClick={check} disabled={!answered || submit.isPending}>
+              Проверить
+            </Button>
+            {answered ? null : (
+              <span className="text-sm text-muted">Ответьте на все вопросы</span>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

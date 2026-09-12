@@ -128,6 +128,42 @@ describe("QuizRunner", () => {
     ).toBeInTheDocument();
   });
 
+  it("не показывает действие следующего шага до проверки", () => {
+    renderWithProviders(
+      <QuizRunner
+        quiz={quizPublic}
+        nextStep={{ href: "/courses/python-basics/02-syntax/01-variables", label: "К следующему модулю" }}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: "К следующему модулю" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("показывает действие следующего шага после проверки с верным адресом", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <QuizRunner
+        quiz={quizPublic}
+        nextStep={{ href: "/courses/python-basics/02-syntax/01-variables", label: "К следующему модулю" }}
+      />,
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Отступами" }));
+    await user.click(screen.getByRole("checkbox", { name: "Требует сборки" }));
+    await user.click(screen.getByRole("button", { name: "Проверить" }));
+
+    const nextStepLink = await screen.findByRole("link", { name: "К следующему модулю" });
+    expect(nextStepLink).toHaveAttribute(
+      "href",
+      "/courses/python-basics/02-syntax/01-variables",
+    );
+    expect(
+      screen.getByRole("button", { name: "Пройти заново" }),
+    ).toBeInTheDocument();
+  });
+
   it("сообщает об ошибке отправки, не теряя выбранные ответы", async () => {
     server.use(
       http.post("/api/quizzes/submit", () =>

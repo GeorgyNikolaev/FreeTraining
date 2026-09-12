@@ -4,8 +4,16 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useNavigate } from "react-router";
 import { describe, expect, it } from "vitest";
 
+import { renderWithProviders } from "../test/render";
 import { ThemeProvider } from "../theme/ThemeProvider";
 import { QuizPage } from "./QuizPage";
+
+function renderQuizPage(route = "/courses/python-basics/01-introduction/quiz") {
+  return renderWithProviders(<QuizPage scope="module" />, {
+    route,
+    path: "/courses/:courseId/:moduleId/quiz",
+  });
+}
 
 // Хост-компонент имитирует переход между тестами разных модулей внутри
 // одного и того же роутера (как в приложении), а не полный перемонтаж
@@ -52,6 +60,32 @@ function renderHarness() {
 }
 
 describe("QuizPage", () => {
+  it("открывается в раскладке курса — с деревом модулей и крошками", async () => {
+    renderQuizPage();
+
+    expect(
+      await screen.findByRole("navigation", { name: "Содержание курса" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Основы Python")).toBeInTheDocument();
+  });
+
+  it("предлагает перейти к следующему модулю после проверки теста", async () => {
+    const user = userEvent.setup();
+    renderQuizPage();
+
+    await user.click(await screen.findByRole("radio", { name: "Отступами" }));
+    await user.click(screen.getByRole("checkbox", { name: "Требует сборки" }));
+    await user.click(screen.getByRole("button", { name: "Проверить" }));
+
+    const nextStepLink = await screen.findByRole("link", {
+      name: "К следующему модулю",
+    });
+    expect(nextStepLink).toHaveAttribute(
+      "href",
+      "/courses/python-basics/02-syntax/01-variables",
+    );
+  });
+
   it("не залипает на разборе другого теста при возврате к уже закешированному", async () => {
     const user = userEvent.setup();
     renderHarness();
