@@ -20,3 +20,54 @@ class StepLink(BaseModel):
     module_id: str | None = None
     lesson_id: str | None = None
     title: str
+
+
+class ResumePosition(BaseModel):
+    module_id: str
+    lesson_id: str
+    lesson_title: str
+
+
+class CourseSummary(BaseModel):
+    id: str
+    title: str
+    description: str
+    tags: list[str]
+    level: str
+    module_count: int
+    lesson_count: int
+    progress_percent: int
+    status: str
+    resume: ResumePosition | None = None
+
+
+class LessonRef(BaseModel):
+    id: str
+    title: str
+    completed: bool
+
+
+class ModuleDetail(BaseModel):
+    id: str
+    title: str
+    lessons: list[LessonRef]
+    has_quiz: bool
+    quiz_passed: bool
+    quiz_best_score: int | None = None
+
+
+class CourseDetail(BaseModel):
+    id: str
+    title: str
+    description: str
+    tags: list[str]
+    level: str
+    modules: list[ModuleDetail]
+    has_cheatsheet: bool
+    has_glossary: bool
+    has_exam: bool
+    exam_passed: bool
+    exam_best_score: int | None = None
+    progress_percent: int
+    status: str
+    resume: ResumePosition | None = None
