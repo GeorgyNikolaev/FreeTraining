@@ -13,6 +13,7 @@ import type {
   CourseSummary,
   LessonDetail,
   PageDetail,
+  ProgressExport,
   QuizPublic,
   QuizResult,
   QuizSubmission,
@@ -150,6 +151,12 @@ export function useSubmitQuiz(courseId: string) {
       void client.invalidateQueries({ queryKey: queryKeys.course(courseId) });
       void client.invalidateQueries({ queryKey: queryKeys.attempts(courseId) });
     },
+  });
+}
+
+export function useExportProgress() {
+  return useMutation({
+    mutationFn: () => apiFetch<ProgressExport>("/api/progress/export"),
   });
 }
 

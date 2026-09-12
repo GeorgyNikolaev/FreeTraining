@@ -18,3 +18,4 @@ export type AttemptSummary = Schemas["AttemptSummary"];
 export type ContentHealth = Schemas["ContentHealth"];
 export type ContentErrorOut = Schemas["ContentErrorOut"];
 export type ResumePosition = Schemas["ResumePosition"];
+export type ProgressExport = Schemas["ProgressExport"];

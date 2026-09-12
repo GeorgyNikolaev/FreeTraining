@@ -8,6 +8,7 @@ import {
   courseSummary,
   lessonDetail,
   pageDetail,
+  progressExport,
   quizPublic,
   quizResult,
 } from "./mocks";
@@ -40,6 +41,7 @@ export const handlers = [
     }),
   ),
   http.get("/api/progress/attempts/:course", () => HttpResponse.json(attempts)),
+  http.get("/api/progress/export", () => HttpResponse.json(progressExport)),
   http.delete("/api/progress/courses/:course", () =>
     HttpResponse.json({ status: "ok" }),
   ),

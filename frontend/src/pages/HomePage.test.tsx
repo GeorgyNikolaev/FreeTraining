@@ -1,8 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { courseCompletedWithResume, courseInProgress, courseSummary } from "../test/mocks";
+import {
+  courseCompletedWithResume,
+  courseInProgress,
+  courseSummary,
+} from "../test/mocks";
 import { renderWithProviders } from "../test/render";
 import { server } from "../test/server";
 import { HomePage } from "./HomePage";
@@ -75,5 +80,62 @@ describe("HomePage", () => {
 
     expect(await screen.findByText("Повторить")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Продолжить обучение" })).toBeNull();
+  });
+
+  it("выгружает прогресс в JSON по нажатию кнопки", async () => {
+    const requested = vi.fn();
+    server.use(
+      http.get("/api/progress/export", () => {
+        requested();
+        return HttpResponse.json({
+          user_id: "local-user",
+          exported_at: "2026-09-13T09:00:00Z",
+          lessons: [],
+          attempts: [],
+          positions: [],
+        });
+      }),
+    );
+
+    const createObjectURL = vi.fn(() => "blob:mock-url");
+    const revokeObjectURL = vi.fn();
+    const originalCreate = URL.createObjectURL;
+    const originalRevoke = URL.revokeObjectURL;
+    URL.createObjectURL = createObjectURL;
+    URL.revokeObjectURL = revokeObjectURL;
+
+    try {
+      const user = userEvent.setup();
+      renderWithProviders(<HomePage />);
+
+      await user.click(
+        await screen.findByRole("button", { name: "Выгрузить прогресс" }),
+      );
+
+      await waitFor(() => expect(requested).toHaveBeenCalled());
+      await waitFor(() => expect(createObjectURL).toHaveBeenCalled());
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
+      expect(await screen.findByText("Основы Python")).toBeInTheDocument();
+    } finally {
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+    }
+  });
+
+  it("показывает ошибку, когда выгрузка прогресса не удалась", async () => {
+    server.use(
+      http.get("/api/progress/export", () =>
+        HttpResponse.json({ detail: "Внутренняя ошибка" }, { status: 500 }),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<HomePage />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Выгрузить прогресс" }),
+    );
+
+    expect(await screen.findByText("Внутренняя ошибка")).toBeInTheDocument();
   });
 });

@@ -5,6 +5,7 @@ import type {
   CourseSummary,
   LessonDetail,
   PageDetail,
+  ProgressExport,
   QuizPublic,
   QuizResult,
 } from "../lib/api/types";
@@ -210,4 +211,27 @@ export const contentHealth: ContentHealth = {
   course_count: 1,
   errors: [],
   warnings: [],
+};
+
+export const progressExport: ProgressExport = {
+  user_id: "local-user",
+  exported_at: "2026-09-13T09:00:00Z",
+  lessons: [
+    {
+      course_id: "python-basics",
+      module_id: "01-introduction",
+      lesson_id: "01-what-is-python",
+      completed: true,
+      completed_at: "2026-09-12T10:00:00Z",
+    },
+  ],
+  attempts,
+  positions: [
+    {
+      course_id: "python-basics",
+      module_id: "02-syntax",
+      lesson_id: "01-variables",
+      updated_at: "2026-09-12T10:00:00Z",
+    },
+  ],
 };
