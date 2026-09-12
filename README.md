@@ -26,6 +26,40 @@ uv run uvicorn app.main:app --reload --port 8000
 
 Документация API открывается по адресу `http://localhost:8000/docs`.
 
+## Запуск фронтенда
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Интерфейс открывается на `http://localhost:5173`. Обращения к `/api` проксируются
+на бэкенд, поэтому он должен быть запущен.
+
+Проверка:
+
+```bash
+cd frontend
+npm run test -- --run
+npm run typecheck
+```
+
+Типы данных API порождаются из схемы бэкенда и не пишутся руками. После изменения
+схемы, при запущенном бэкенде:
+
+```bash
+cd frontend
+npm run api:types
+```
+
+## Дизайн
+
+Все значения оформления заданы в `frontend/src/styles/tokens.css` — это
+единственное место, где их правят. Живой каталог компонентов открывается по
+адресу `http://localhost:5173/design`, правила словами — в
+`docs/design-system.md`.
+
 ## Проверка
 
 ```bash
