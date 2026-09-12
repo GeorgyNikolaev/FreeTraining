@@ -18,5 +18,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     css: false,
+    // Node 22+ предоставляет собственный глобальный `localStorage` (Web Storage API),
+    // который перекрывает реализацию jsdom и не имеет методов вроде `clear()`.
+    // Отключаем эту экспериментальную функцию Node для процессов-воркеров тестов.
+    execArgv: ["--no-experimental-webstorage"],
   },
 });
