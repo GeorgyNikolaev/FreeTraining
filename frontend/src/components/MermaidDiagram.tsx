@@ -74,11 +74,11 @@ export function MermaidDiagram({ code }: { code: string }) {
   }
 
   return (
-    <div className="overflow-x-auto text-center font-sans">
+    <div className="font-sans">
       <div
         role="img"
         aria-label="Диаграмма, построенная из схемы Mermaid"
-        className="inline-block"
+        className="mermaid-figure"
         dangerouslySetInnerHTML={{ __html: svg }}
       />
     </div>
