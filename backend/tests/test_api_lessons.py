@@ -20,7 +20,7 @@ async def test_lesson_navigation_links(client):
 
     assert lesson["prev"]["kind"] == "lesson"
     assert lesson["prev"]["lesson_id"] == "01-first-lesson"
-    assert lesson["next"]["kind"] == "quiz"
+    assert lesson["next"]["kind"] == "homework"
     assert lesson["next"]["module_id"] == "01-basics"
 
 
@@ -74,5 +74,23 @@ async def test_missing_page_returns_404(client):
 
 async def test_unknown_page_name_returns_404(client):
     response = await client.get("/api/courses/demo-course/pages/что-угодно")
+
+    assert response.status_code == 404
+
+
+async def test_homework_returns_content_and_navigation(client):
+    response = await client.get("/api/courses/demo-course/homework/01-basics")
+
+    assert response.status_code == 200
+    homework = response.json()
+    assert homework["title"] == "Домашнее задание к основам"
+    assert homework["module_title"] == "Основы"
+    assert "Напишите короткий конспект" in homework["content"]
+    assert homework["prev"]["lesson_id"] == "02-second-lesson"
+    assert homework["next"]["kind"] == "quiz"
+
+
+async def test_homework_of_module_without_one_is_404(client):
+    response = await client.get("/api/courses/demo-course/homework/02-advanced")
 
     assert response.status_code == 404

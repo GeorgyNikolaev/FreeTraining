@@ -8,6 +8,7 @@ import { QueryState } from "../components/QueryState";
 import { Badge } from "../components/ui/Badge";
 import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { Button } from "../components/ui/Button";
+import { Callout } from "../components/ui/Callout";
 import { Card, CardBody } from "../components/ui/Card";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -74,6 +75,16 @@ export function CoursePage() {
             </div>
             <ProgressRing value={course.progress_percent} size={64} />
           </header>
+
+          {course.prerequisites.length > 0 ? (
+            <Callout title="Что нужно знать заранее">
+              <ul className="mt-1 flex list-disc flex-col gap-1 pl-4">
+                {course.prerequisites.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </Callout>
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
             {startPath ? (

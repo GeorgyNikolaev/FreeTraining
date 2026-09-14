@@ -2,3 +2,6 @@ title: Демонстрационный курс
 description: Курс для проверки загрузчика.
 tags: [demo, test]
 level: beginner
+prerequisites:
+  - Базовый Python
+  - HTTP и REST

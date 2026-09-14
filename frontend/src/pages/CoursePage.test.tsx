@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
-import { courseDetail } from "../test/mocks";
+import { courseDetail, courseWithPrerequisites } from "../test/mocks";
 import { renderWithProviders } from "../test/render";
 import { server } from "../test/server";
 import { CoursePage } from "./CoursePage";
@@ -24,6 +24,41 @@ describe("CoursePage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(courseDetail.description)).toBeInTheDocument();
     expect(screen.getByText("33%")).toBeInTheDocument();
+  });
+
+  it("показывает, что нужно знать заранее", async () => {
+    server.use(
+      http.get("/api/courses/:course", () =>
+        HttpResponse.json(courseWithPrerequisites),
+      ),
+    );
+
+    renderPage();
+
+    expect(await screen.findByText("Что нужно знать заранее")).toBeInTheDocument();
+    expect(screen.getByText("Python и виртуальные окружения")).toBeInTheDocument();
+    expect(screen.getByText("HTTP и REST")).toBeInTheDocument();
+  });
+
+  it("не показывает список требований, когда их нет", async () => {
+    renderPage();
+
+    await screen.findByRole("heading", { name: "Основы Python", level: 1 });
+    expect(screen.queryByText("Что нужно знать заранее")).not.toBeInTheDocument();
+  });
+
+  it("показывает ссылку на домашнее задание только там, где оно есть", async () => {
+    renderPage();
+
+    const nav = await screen.findByRole("navigation", { name: "Содержание курса" });
+    const homeworkLinks = within(nav).getAllByRole("link", {
+      name: "Домашнее задание",
+    });
+    expect(homeworkLinks).toHaveLength(1);
+    expect(homeworkLinks[0]).toHaveAttribute(
+      "href",
+      "/courses/python-basics/01-introduction/homework",
+    );
   });
 
   it("показывает модули и уроки со ссылками", async () => {

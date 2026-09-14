@@ -7,6 +7,7 @@ export type CourseDetail = Schemas["CourseDetail"];
 export type ModuleDetail = Schemas["ModuleDetail"];
 export type LessonRef = Schemas["LessonRef"];
 export type LessonDetail = Schemas["LessonDetail"];
+export type HomeworkDetail = Schemas["HomeworkDetail"];
 export type StepLink = Schemas["StepLink"];
 export type PageDetail = Schemas["PageDetail"];
 export type QuizPublic = Schemas["QuizPublic"];

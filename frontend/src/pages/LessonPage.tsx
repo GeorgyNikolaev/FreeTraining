@@ -29,6 +29,7 @@ function findLesson(
 
 function nextLabel(step: StepLink | null | undefined): string {
   if (!step) return "Пройдено";
+  if (step.kind === "homework") return "Пройдено, к домашнему заданию";
   if (step.kind === "quiz") return "Пройдено, к тесту модуля";
   if (step.kind === "exam") return "Пройдено, к экзамену";
   return "Пройдено, дальше";

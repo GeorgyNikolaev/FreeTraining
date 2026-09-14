@@ -62,6 +62,17 @@ describe("stepPath", () => {
     ).toBe("/courses/python-basics/01-introduction/quiz");
   });
 
+  it("строит адрес домашнего задания", () => {
+    expect(
+      stepPath("python-basics", {
+        kind: "homework",
+        module_id: "01-introduction",
+        lesson_id: null,
+        title: "Домашнее задание",
+      }),
+    ).toBe("/courses/python-basics/01-introduction/homework");
+  });
+
   it("строит адрес экзамена", () => {
     expect(
       stepPath("python-basics", {

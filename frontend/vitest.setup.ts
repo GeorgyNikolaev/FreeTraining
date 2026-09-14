@@ -23,6 +23,10 @@ window.matchMedia = ((query: string) => ({
   dispatchEvent: () => false,
 })) as typeof window.matchMedia;
 
+// jsdom не умеет прокручивать окно и печатает «Not implemented» на каждый
+// вызов. Заглушка убирает шум и позволяет тестам следить за сбросом прокрутки.
+window.scrollTo = (() => {}) as typeof window.scrollTo;
+
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

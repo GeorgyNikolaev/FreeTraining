@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Check, CircleDashed, FileText, ListChecks } from "lucide-react";
+import { Check, CircleDashed, FileText, ListChecks, PencilLine } from "lucide-react";
 import { Link } from "react-router";
 
 import type { CourseDetail } from "../lib/api/types";
@@ -49,6 +49,20 @@ export function ModuleTree({
                 </li>
               );
             })}
+
+            {module.has_homework ? (
+              <li>
+                <Link
+                  to={`/courses/${course.id}/${module.id}/homework`}
+                  className="flex items-center gap-2 rounded-control px-2 py-1.5 text-sm
+                    text-muted transition-colors duration-150
+                    hover:bg-sunken hover:text-body"
+                >
+                  <PencilLine size={14} className="shrink-0 text-subtle" />
+                  <span className="min-w-0 truncate">Домашнее задание</span>
+                </Link>
+              </li>
+            ) : null}
 
             {module.has_quiz ? (
               <li>

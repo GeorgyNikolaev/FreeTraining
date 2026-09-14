@@ -9,6 +9,7 @@ from app.content.markdown import extract_title, humanize
 from app.content.models import Course, Lesson, Module, Quiz
 
 PAGES = {"cheatsheet": "cheatsheet.md", "glossary": "glossary.md"}
+HOMEWORK = "homework.md"
 
 
 @dataclass
@@ -90,7 +91,12 @@ def _load_quiz(
 def _is_module_dir(path: Path) -> bool:
     if (path / "module.yaml").exists():
         return True
-    return any(path.glob("*.md"))
+    return any(_lesson_files(path))
+
+
+def _lesson_files(module_dir: Path) -> list[Path]:
+    """Уроки модуля. Домашнее задание лежит рядом, но уроком не является."""
+    return sorted(p for p in module_dir.glob("*.md") if p.name != HOMEWORK)
 
 
 def _load_module(
@@ -115,7 +121,7 @@ def _load_module(
     title = str(meta.get("title") or humanize(module_dir.name))
 
     lessons: list[Lesson] = []
-    for lesson_file in sorted(module_dir.glob("*.md")):
+    for lesson_file in _lesson_files(module_dir):
         text = lesson_file.read_text(encoding="utf-8")
         heading = extract_title(text)
         lesson_title = heading or humanize(lesson_file.stem)
@@ -138,7 +144,14 @@ def _load_module(
     quiz = _load_quiz(
         module_dir / "quiz.yaml", course_id, f"{module_dir.name}/quiz.yaml", errors
     )
-    return Module(id=module_dir.name, title=title, lessons=lessons, quiz=quiz)
+    homework = module_dir / HOMEWORK
+    return Module(
+        id=module_dir.name,
+        title=title,
+        lessons=lessons,
+        quiz=quiz,
+        homework=homework if homework.exists() else None,
+    )
 
 
 def load_course(
@@ -193,6 +206,9 @@ def load_course(
             description=str(meta.get("description") or ""),
             tags=[str(tag) for tag in (meta.get("tags") or [])],
             level=meta.get("level") or "beginner",
+            prerequisites=[
+                str(item) for item in (meta.get("prerequisites") or []) if str(item).strip()
+            ],
             modules=modules,
             has_cheatsheet=(course_dir / PAGES["cheatsheet"]).exists(),
             has_glossary=(course_dir / PAGES["glossary"]).exists(),
@@ -235,6 +251,13 @@ def read_lesson_text(course: Course, module_id: str, lesson_id: str) -> str | No
         for lesson in module.lessons:
             if lesson.id == lesson_id:
                 return lesson.path.read_text(encoding="utf-8")
+    return None
+
+
+def read_homework_text(course: Course, module_id: str) -> str | None:
+    for module in course.modules:
+        if module.id == module_id and module.homework is not None:
+            return module.homework.read_text(encoding="utf-8")
     return None
 
 

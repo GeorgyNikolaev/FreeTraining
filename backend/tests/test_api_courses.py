@@ -14,6 +14,7 @@ async def test_catalogue_lists_courses(client):
     assert courses[0]["progress_percent"] == 0
     assert courses[0]["status"] == "not_started"
     assert courses[0]["resume"] is None
+    assert courses[0]["prerequisites"] == ["Базовый Python", "HTTP и REST"]
 
 
 async def test_catalogue_shows_progress(client, session):
@@ -101,3 +102,11 @@ async def test_course_response_carries_no_quiz_content(client):
     assert "correct_answer" not in body
     assert "Модуль содержит два урока" not in body
     assert "Сколько уроков в этом модуле?" not in body
+
+
+async def test_course_detail_reports_prerequisites_and_homework(client):
+    course = (await client.get("/api/courses/demo-course")).json()
+
+    assert course["prerequisites"] == ["Базовый Python", "HTTP и REST"]
+    assert course["modules"][0]["has_homework"] is True
+    assert course["modules"][1]["has_homework"] is False

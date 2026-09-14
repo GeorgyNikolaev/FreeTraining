@@ -13,7 +13,7 @@ class QuestionResult(BaseModel):
     explanation: str
 
 
-StepKind = Literal["lesson", "quiz", "exam"]
+StepKind = Literal["lesson", "homework", "quiz", "exam"]
 
 
 class StepLink(BaseModel):
@@ -35,6 +35,7 @@ class CourseSummary(BaseModel):
     description: str
     tags: list[str]
     level: str
+    prerequisites: list[str] = []
     module_count: int
     lesson_count: int
     progress_percent: int
@@ -52,6 +53,7 @@ class ModuleDetail(BaseModel):
     id: str
     title: str
     lessons: list[LessonRef]
+    has_homework: bool = False
     has_quiz: bool
     quiz_passed: bool
     quiz_best_score: int | None = None
@@ -63,6 +65,7 @@ class CourseDetail(BaseModel):
     description: str
     tags: list[str]
     level: str
+    prerequisites: list[str] = []
     modules: list[ModuleDetail]
     has_cheatsheet: bool
     has_glossary: bool
@@ -81,6 +84,16 @@ class LessonDetail(BaseModel):
     title: str
     content: str
     completed: bool
+    prev: StepLink | None = None
+    next: StepLink | None = None
+
+
+class HomeworkDetail(BaseModel):
+    course_id: str
+    module_id: str
+    module_title: str
+    title: str
+    content: str
     prev: StepLink | None = None
     next: StepLink | None = None
 

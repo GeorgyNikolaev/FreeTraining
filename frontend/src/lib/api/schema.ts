@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/courses/{course_id}/homework/{module_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Homework */
+        get: operations["get_homework_api_courses__course_id__homework__module_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses/{course_id}/pages/{page}": {
         parameters: {
             query?: never;
@@ -307,6 +324,11 @@ export interface components {
             tags: string[];
             /** Level */
             level: string;
+            /**
+             * Prerequisites
+             * @default []
+             */
+            prerequisites: string[];
             /** Modules */
             modules: components["schemas"]["ModuleDetail"][];
             /** Has Cheatsheet */
@@ -337,6 +359,11 @@ export interface components {
             tags: string[];
             /** Level */
             level: string;
+            /**
+             * Prerequisites
+             * @default []
+             */
+            prerequisites: string[];
             /** Module Count */
             module_count: number;
             /** Lesson Count */
@@ -351,6 +378,21 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HomeworkDetail */
+        HomeworkDetail: {
+            /** Course Id */
+            course_id: string;
+            /** Module Id */
+            module_id: string;
+            /** Module Title */
+            module_title: string;
+            /** Title */
+            title: string;
+            /** Content */
+            content: string;
+            prev?: components["schemas"]["StepLink"] | null;
+            next?: components["schemas"]["StepLink"] | null;
         };
         /** LessonDetail */
         LessonDetail: {
@@ -402,6 +444,11 @@ export interface components {
             title: string;
             /** Lessons */
             lessons: components["schemas"]["LessonRef"][];
+            /**
+             * Has Homework
+             * @default false
+             */
+            has_homework: boolean;
             /** Has Quiz */
             has_quiz: boolean;
             /** Quiz Passed */
@@ -561,7 +608,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "lesson" | "quiz" | "exam";
+            kind: "lesson" | "homework" | "quiz" | "exam";
             /** Module Id */
             module_id?: string | null;
             /** Lesson Id */
@@ -662,6 +709,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LessonDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_homework_api_courses__course_id__homework__module_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: string;
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeworkDetail"];
                 };
             };
             /** @description Validation Error */

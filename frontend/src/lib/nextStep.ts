@@ -1,9 +1,10 @@
 import type { CourseDetail, StepLink } from "./api/types";
 
-/** Строит адрес шага курса — урока, теста модуля или экзамена. */
+/** Строит адрес шага курса — урока, домашнего задания, теста модуля или экзамена. */
 export function stepPath(courseId: string, step: StepLink): string {
   if (step.kind === "exam") return `/courses/${courseId}/exam`;
   if (step.kind === "quiz") return `/courses/${courseId}/${step.module_id}/quiz`;
+  if (step.kind === "homework") return `/courses/${courseId}/${step.module_id}/homework`;
   return `/courses/${courseId}/${step.module_id}/${step.lesson_id}`;
 }
 

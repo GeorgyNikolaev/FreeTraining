@@ -7,6 +7,7 @@ from app.content.loader import (
     CourseLoadError,
     load_course,
     load_courses,
+    read_homework_text,
     read_lesson_text,
     read_page_text,
 )
@@ -46,6 +47,7 @@ def test_load_course_reads_metadata():
     assert course.title == "Демонстрационный курс"
     assert course.tags == ["demo", "test"]
     assert course.level == "beginner"
+    assert course.prerequisites == ["Базовый Python", "HTTP и REST"]
 
 
 def test_load_course_orders_modules_and_lessons_by_prefix():
@@ -122,6 +124,102 @@ def test_read_lesson_text_returns_none_for_unknown_lesson():
     course = load_course(CONTENT / "demo-course")
 
     assert read_lesson_text(course, "01-basics", "нет-такого") is None
+
+
+def test_homework_is_found_but_is_not_a_lesson():
+    course = load_course(CONTENT / "demo-course")
+
+    assert course.modules[0].homework is not None
+    assert course.modules[1].homework is None
+    assert [lesson.id for lesson in course.modules[0].lessons] == [
+        "01-first-lesson",
+        "02-second-lesson",
+    ]
+
+
+def test_read_homework_text():
+    course = load_course(CONTENT / "demo-course")
+
+    assert "Напишите короткий конспект" in (read_homework_text(course, "01-basics") or "")
+    assert read_homework_text(course, "02-advanced") is None
+
+
+def test_course_without_prerequisites_gets_empty_list(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+
+    assert load_course(course_dir).prerequisites == []
+
+
+def test_module_with_only_homework_has_no_lessons(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "homework.md").write_text("# Домашка\n", encoding="utf-8")
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    assert error.value.errors[0].message == "в модуле нет ни одного урока"
+
+
+def test_quiz_with_marked_options_loads(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+    (module_dir / "quiz.yaml").write_text(
+        "questions:\n"
+        "  - question: Вопрос\n"
+        "    options:\n"
+        "      - text: Неверно\n"
+        "      - text: Верно\n"
+        "        correct: true\n"
+        "    explanation: Потому что.\n",
+        encoding="utf-8",
+    )
+
+    quiz = load_course(course_dir).modules[0].quiz
+
+    assert quiz is not None
+    assert quiz.questions[0].options == ["Неверно", "Верно"]
+    assert quiz.questions[0].correct_answers == ["Верно"]
+
+
+def test_quiz_without_marked_option_is_reported(tmp_path):
+    course_dir = tmp_path / "course"
+    course_dir.mkdir()
+    (course_dir / "course.yaml").write_text("title: Курс\n", encoding="utf-8")
+    module_dir = course_dir / "01-module"
+    module_dir.mkdir()
+    (module_dir / "module.yaml").write_text("title: Модуль\n", encoding="utf-8")
+    (module_dir / "01-lesson.md").write_text("# Урок\n\nТекст.\n", encoding="utf-8")
+    (module_dir / "quiz.yaml").write_text(
+        "questions:\n"
+        "  - question: Вопрос\n"
+        "    options:\n"
+        "      - text: Первый\n"
+        "      - text: Второй\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(CourseLoadError) as error:
+        load_course(course_dir)
+
+    errors = error.value.errors
+    assert errors[0].location == "01-module/quiz.yaml"
+    assert "ни один вариант не помечен correct: true" in errors[0].message
 
 
 def test_read_page_text():

@@ -3,6 +3,7 @@ import type {
   ContentHealth,
   CourseDetail,
   CourseSummary,
+  HomeworkDetail,
   LessonDetail,
   PageDetail,
   ProgressExport,
@@ -16,6 +17,7 @@ export const courseSummary: CourseSummary = {
   description: "Синтаксис, типы данных и функции с нуля.",
   tags: ["python", "backend"],
   level: "beginner",
+  prerequisites: [],
   module_count: 2,
   lesson_count: 3,
   progress_percent: 0,
@@ -60,6 +62,7 @@ export const courseDetail: CourseDetail = {
         { id: "01-what-is-python", title: "Что такое Python", completed: true },
         { id: "02-installation", title: "Установка и запуск", completed: false },
       ],
+      has_homework: true,
       has_quiz: true,
       quiz_passed: false,
       quiz_best_score: null,
@@ -70,6 +73,7 @@ export const courseDetail: CourseDetail = {
       lessons: [
         { id: "01-variables", title: "Переменные и типы данных", completed: false },
       ],
+      has_homework: false,
       has_quiz: true,
       quiz_passed: true,
       quiz_best_score: 100,
@@ -110,6 +114,31 @@ export const lastLessonDetail: LessonDetail = {
     module_id: "01-introduction",
     lesson_id: "01-what-is-python",
     title: "Что такое Python",
+  },
+  next: {
+    kind: "quiz",
+    module_id: "01-introduction",
+    lesson_id: null,
+    title: "Тест модуля: Введение",
+  },
+};
+
+export const courseWithPrerequisites: CourseDetail = {
+  ...courseDetail,
+  prerequisites: ["Python и виртуальные окружения", "HTTP и REST"],
+};
+
+export const homeworkDetail: HomeworkDetail = {
+  course_id: "python-basics",
+  module_id: "01-introduction",
+  module_title: "Введение",
+  title: "Домашнее задание к введению",
+  content: "# Домашнее задание к введению\n\nУстановите Python и выведите версию.",
+  prev: {
+    kind: "lesson",
+    module_id: "01-introduction",
+    lesson_id: "02-installation",
+    title: "Установка и запуск",
   },
   next: {
     kind: "quiz",

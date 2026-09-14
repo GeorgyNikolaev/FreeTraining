@@ -6,6 +6,7 @@ import {
   contentHealth,
   courseDetail,
   courseSummary,
+  homeworkDetail,
   lessonDetail,
   pageDetail,
   progressExport,
@@ -18,6 +19,9 @@ export const handlers = [
   http.get("/api/courses/:course", () => HttpResponse.json(courseDetail)),
   http.get("/api/courses/:course/lessons/:module/:lesson", () =>
     HttpResponse.json(lessonDetail),
+  ),
+  http.get("/api/courses/:course/homework/:module", () =>
+    HttpResponse.json(homeworkDetail),
   ),
   http.get("/api/courses/:course/pages/:page", () => HttpResponse.json(pageDetail)),
   http.get("/api/courses/:course/quizzes/:module", () => HttpResponse.json(quizPublic)),

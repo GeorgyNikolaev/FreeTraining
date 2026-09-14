@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from app.content.loader import load_course
-from app.services.navigation import course_steps, neighbours
+from app.services.navigation import course_steps, homework_neighbours, neighbours
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -16,6 +16,7 @@ def test_course_steps_order():
     assert [(step.kind, step.module_id, step.lesson_id) for step in steps] == [
         ("lesson", "01-basics", "01-first-lesson"),
         ("lesson", "01-basics", "02-second-lesson"),
+        ("homework", "01-basics", None),
         ("quiz", "01-basics", None),
         ("lesson", "02-advanced", "01-third-lesson"),
         ("exam", None, None),
@@ -26,8 +27,9 @@ def test_step_titles_are_human_readable():
     steps = course_steps(demo_course())
 
     assert steps[0].title == "Первый урок"
-    assert steps[2].title == "Тест модуля: Основы"
-    assert steps[4].title == "Финальный экзамен"
+    assert steps[2].title == "Домашнее задание: Основы"
+    assert steps[3].title == "Тест модуля: Основы"
+    assert steps[5].title == "Финальный экзамен"
 
 
 def test_first_lesson_has_no_previous():
@@ -38,12 +40,25 @@ def test_first_lesson_has_no_previous():
     assert following.lesson_id == "02-second-lesson"
 
 
-def test_last_lesson_of_module_leads_to_quiz():
+def test_last_lesson_of_module_leads_to_homework():
     _, following = neighbours(demo_course(), "01-basics", "02-second-lesson")
 
     assert following is not None
-    assert following.kind == "quiz"
+    assert following.kind == "homework"
     assert following.module_id == "01-basics"
+
+
+def test_homework_sits_between_last_lesson_and_quiz():
+    previous, following = homework_neighbours(demo_course(), "01-basics")
+
+    assert previous is not None
+    assert previous.lesson_id == "02-second-lesson"
+    assert following is not None
+    assert following.kind == "quiz"
+
+
+def test_module_without_homework_has_no_homework_neighbours():
+    assert homework_neighbours(demo_course(), "02-advanced") == (None, None)
 
 
 def test_lesson_after_quiz_sees_quiz_as_previous():

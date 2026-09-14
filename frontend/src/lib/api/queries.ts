@@ -11,6 +11,7 @@ import type {
   ContentHealth,
   CourseDetail,
   CourseSummary,
+  HomeworkDetail,
   LessonDetail,
   PageDetail,
   ProgressExport,
@@ -24,6 +25,8 @@ export const queryKeys = {
   course: (courseId: string) => ["courses", courseId] as const,
   lesson: (courseId: string, moduleId: string, lessonId: string) =>
     ["courses", courseId, "lessons", moduleId, lessonId] as const,
+  homework: (courseId: string, moduleId: string) =>
+    ["courses", courseId, "homework", moduleId] as const,
   page: (courseId: string, page: string) => ["courses", courseId, "pages", page] as const,
   moduleQuiz: (courseId: string, moduleId: string) =>
     ["courses", courseId, "quizzes", moduleId] as const,
@@ -57,6 +60,17 @@ export function useLesson(
       apiFetch<LessonDetail>(
         `/api/courses/${courseId}/lessons/${moduleId}/${lessonId}`,
       ),
+  });
+}
+
+export function useHomework(
+  courseId: string,
+  moduleId: string,
+): UseQueryResult<HomeworkDetail, ApiError> {
+  return useQuery({
+    queryKey: queryKeys.homework(courseId, moduleId),
+    queryFn: () =>
+      apiFetch<HomeworkDetail>(`/api/courses/${courseId}/homework/${moduleId}`),
   });
 }
 

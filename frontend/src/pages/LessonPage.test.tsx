@@ -94,6 +94,28 @@ describe("LessonPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("предлагает перейти к домашнему заданию, когда оно есть", async () => {
+    server.use(
+      http.get("/api/courses/:course/lessons/:module/:lesson", () =>
+        HttpResponse.json({
+          ...lastLessonDetail,
+          next: {
+            kind: "homework",
+            module_id: "01-introduction",
+            lesson_id: null,
+            title: "Домашнее задание: Введение",
+          },
+        }),
+      ),
+    );
+
+    renderPage("/courses/python-basics/01-introduction/02-installation");
+
+    expect(
+      await screen.findByRole("button", { name: "Пройдено, к домашнему заданию" }),
+    ).toBeInTheDocument();
+  });
+
   it("показывает ссылку на предыдущий шаг, когда он есть", async () => {
     server.use(
       http.get("/api/courses/:course/lessons/:module/:lesson", () =>

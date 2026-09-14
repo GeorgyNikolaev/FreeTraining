@@ -1,9 +1,43 @@
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
 Level = Literal["beginner", "intermediate", "advanced"]
+
+
+def _unpack_marked_options(data: dict[str, Any]) -> dict[str, Any]:
+    """Переводит вариант с пометкой `correct: true` в пару options/answer.
+
+    Формулировка верного ответа нигде не дублируется, поэтому разойтись с
+    вариантом она не может. Старая запись (`answer` со строкой) продолжает
+    работать без изменений.
+    """
+    options = data.get("options")
+    if not isinstance(options, list) or not any(isinstance(item, dict) for item in options):
+        return data
+
+    if not all(isinstance(item, dict) for item in options):
+        raise ValueError(
+            "варианты записаны по-разному: либо у всех поле text, либо все строками"
+        )
+    if data.get("answer") is not None:
+        raise ValueError("укажите либо answer, либо пометку correct у вариантов, но не оба")
+
+    texts: list[str] = []
+    correct: list[str] = []
+    for item in options:
+        if "text" not in item:
+            raise ValueError("у варианта нет поля text")
+        text = str(item["text"])
+        texts.append(text)
+        if item.get("correct"):
+            correct.append(text)
+
+    if not correct:
+        raise ValueError("ни один вариант не помечен correct: true")
+
+    return {**data, "options": texts, "answer": correct[0] if len(correct) == 1 else correct}
 
 
 class Question(BaseModel):
@@ -11,6 +45,11 @@ class Question(BaseModel):
     options: list[str] = Field(min_length=2)
     answer: str | list[str]
     explanation: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_marked_options(cls, data: Any) -> Any:
+        return _unpack_marked_options(data) if isinstance(data, dict) else data
 
     @property
     def correct_answers(self) -> list[str]:
@@ -48,6 +87,7 @@ class Module(BaseModel):
     title: str
     lessons: list[Lesson]
     quiz: Quiz | None = None
+    homework: Path | None = None
 
 
 class Course(BaseModel):
@@ -57,6 +97,7 @@ class Course(BaseModel):
     description: str = ""
     tags: list[str] = Field(default_factory=list)
     level: Level = "beginner"
+    prerequisites: list[str] = Field(default_factory=list)
     modules: list[Module] = Field(default_factory=list)
     has_cheatsheet: bool = False
     has_glossary: bool = False
