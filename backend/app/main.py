@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, courses, health, progress, quizzes, reviews
 from app.config import JWT_SECRET_HINT, settings
 from app.db import create_tables
-from app.redis import redis_client
+from app.redis_client import redis_client
 
 
 @asynccontextmanager

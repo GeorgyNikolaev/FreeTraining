@@ -2,11 +2,16 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BACKEND_DIR.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    """Значения ниже — запасные для локальной работы. Переменные окружения и
+    backend/.env их перекрывают; файл ищется от папки бэкенда, а не от текущей
+    папки процесса, поэтому запуск из IDE или из корня репозитория его видит."""
+
+    model_config = SettingsConfigDict(env_file=BACKEND_DIR / ".env", extra="ignore")
 
     database_url: str = (
         "postgresql+asyncpg://freetraining:freetraining@localhost:5433/freetraining"

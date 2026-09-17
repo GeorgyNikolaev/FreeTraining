@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db import session_factory
-from app.redis import redis_client
+from app.redis_client import redis_client
 from app.services.guests import is_guest_id, new_guest_id
 from app.services.sessions import session_user_id
 from app.services.tokens import decode_access_token
