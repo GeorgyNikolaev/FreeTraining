@@ -15,7 +15,7 @@ import { StarRating } from "../components/ui/StarRating";
 import { Tabs, type TabItem } from "../components/ui/Tabs";
 import { ReviewPrompt } from "../features/reviews/ReviewPrompt";
 import { ReviewsTab } from "../features/reviews/ReviewsTab";
-import { useCourse, usePage, useResetCourse } from "../lib/api/queries";
+import { useCourse, usePage, useResetCourse, useReviews } from "../lib/api/queries";
 import type { CourseDetail } from "../lib/api/types";
 
 function firstLessonPath(course: CourseDetail): string | null {
@@ -40,6 +40,8 @@ export function CoursePage() {
   const { courseId = "" } = useParams();
   const { data: course, isLoading, error } = useCourse(courseId);
   const reset = useResetCourse(courseId);
+  // Сводка отзывов нужна в шапке, только чтобы решить, показывать ли «Оценить курс»
+  const reviews = useReviews(courseId, course?.rating_count === 0);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tabs: TabItem[] = [{ id: "modules", label: "Модули" }];
@@ -80,29 +82,29 @@ export function CoursePage() {
             <div className="flex min-w-0 flex-col gap-3">
               <h1 className="text-2xl font-semibold tracking-tight">{course.title}</h1>
               <p className="max-w-2xl text-sm text-muted">{course.description}</p>
+              {course.rating_average != null ? (
+                <button
+                  type="button"
+                  onClick={() => setTab("reviews")}
+                  className="self-start rounded-control transition-opacity duration-150
+                    hover:opacity-80"
+                >
+                  <StarRating value={course.rating_average} count={course.rating_count} />
+                </button>
+              ) : reviews.data?.can_review ? (
+                <button
+                  type="button"
+                  onClick={() => setTab("reviews")}
+                  className="self-start text-sm font-medium text-accent transition-opacity
+                    duration-150 hover:opacity-80"
+                >
+                  Оценить курс
+                </button>
+              ) : null}
               <div className="flex flex-wrap items-center gap-2">
                 {course.tags.map((tag) => (
                   <Badge key={tag}>{tag}</Badge>
                 ))}
-                {course.rating_average != null ? (
-                  <button
-                    type="button"
-                    onClick={() => setTab("reviews")}
-                    className="ml-2 rounded-control transition-opacity duration-150
-                      hover:opacity-80"
-                  >
-                    <StarRating value={course.rating_average} count={course.rating_count} />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setTab("reviews")}
-                    className="ml-2 text-sm font-medium text-accent transition-opacity
-                      duration-150 hover:opacity-80"
-                  >
-                    Оценить курс
-                  </button>
-                )}
               </div>
             </div>
             <ProgressRing value={course.progress_percent} size={64} />
