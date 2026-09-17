@@ -13,6 +13,7 @@ import { ProgressRing } from "../components/ui/ProgressRing";
 import { Skeleton } from "../components/ui/Skeleton";
 import { StarRating } from "../components/ui/StarRating";
 import { Tabs, type TabItem } from "../components/ui/Tabs";
+import { ReviewPrompt } from "../features/reviews/ReviewPrompt";
 import { ReviewsTab } from "../features/reviews/ReviewsTab";
 import { useCourse, usePage, useResetCourse } from "../lib/api/queries";
 import type { CourseDetail } from "../lib/api/types";
@@ -149,6 +150,10 @@ export function CoursePage() {
               Сбросить прогресс
             </Button>
           </div>
+
+          {tab === "reviews" ? null : (
+            <ReviewPrompt course={course} onRate={() => setTab("reviews")} />
+          )}
 
           <Tabs items={tabs} active={tab} onChange={setTab} />
 

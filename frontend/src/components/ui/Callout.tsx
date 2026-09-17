@@ -22,10 +22,13 @@ export function Callout({
   tone = "info",
   title,
   children,
+  actions,
 }: {
   tone?: Tone;
   title?: string;
   children?: ReactNode;
+  /** Кнопки под текстом. Только вторичные и прозрачные: акцент остаётся за экраном. */
+  actions?: ReactNode;
 }) {
   const Icon = TONES[tone].icon;
 
@@ -35,6 +38,7 @@ export function Callout({
       <div className="min-w-0 text-sm">
         {title ? <p className="font-semibold">{title}</p> : null}
         {children ? <div className="text-muted">{children}</div> : null}
+        {actions ? <div className="mt-3 flex flex-wrap gap-2">{actions}</div> : null}
       </div>
     </div>
   );

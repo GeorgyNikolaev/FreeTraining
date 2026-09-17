@@ -176,4 +176,20 @@ describe("CoursePage", () => {
     });
     expect(activeLink).toHaveAttribute("aria-current", "page");
   });
+
+  it("предлагает оценить пройденный курс и скрывает предложение по «Не сейчас»", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/courses/:course", () =>
+        HttpResponse.json({ ...courseDetail, status: "completed", progress_percent: 100 }),
+      ),
+    );
+    renderPage();
+
+    expect(await screen.findByText("Курс пройден")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Не сейчас" }));
+
+    expect(screen.queryByText("Курс пройден")).not.toBeInTheDocument();
+    localStorage.clear();
+  });
 });

@@ -192,10 +192,14 @@ export function useResetCourse(courseId: string) {
   });
 }
 
-export function useReviews(courseId: string): UseQueryResult<CourseReviews, ApiError> {
+export function useReviews(
+  courseId: string,
+  enabled = true,
+): UseQueryResult<CourseReviews, ApiError> {
   return useQuery({
     queryKey: queryKeys.reviews(courseId),
     queryFn: () => apiFetch<CourseReviews>(`/api/courses/${courseId}/reviews`),
+    enabled,
   });
 }
 

@@ -2,6 +2,7 @@ import type {
   AttemptSummary,
   ContentHealth,
   CourseDetail,
+  CourseReviews,
   CourseSummary,
   HomeworkDetail,
   LessonDetail,
@@ -265,5 +266,16 @@ export const progressExport: ProgressExport = {
       updated_at: "2026-09-12T10:00:00Z",
     },
   ],
+  reviews: [],
+};
+
+export const courseReviews: CourseReviews = {
+  course_id: "python-basics",
+  rating_average: null,
+  rating_count: 0,
+  can_review: true,
+  modules_required: 2,
+  modules_completed: 2,
+  my_review: null,
   reviews: [],
 };

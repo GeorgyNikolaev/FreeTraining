@@ -225,6 +225,22 @@ export function DesignPage() {
               <Callout tone="warning" title="Предупреждение">
                 В уроке нет заголовка
               </Callout>
+              <Callout
+                tone="success"
+                title="С действиями"
+                actions={
+                  <>
+                    <Button variant="secondary" size="sm">
+                      Оценить курс
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      Не сейчас
+                    </Button>
+                  </>
+                }
+              >
+                Кнопки под текстом только вторичные или прозрачные
+              </Callout>
             </div>
           </Row>
           <Row label="Вкладки">
