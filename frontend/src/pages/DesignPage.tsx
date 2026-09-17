@@ -1,3 +1,4 @@
+import { LogOut, Settings } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { Badge } from "../components/ui/Badge";
@@ -5,14 +6,18 @@ import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { Button } from "../components/ui/Button";
 import { Callout } from "../components/ui/Callout";
 import { Card, CardBody, CardTitle } from "../components/ui/Card";
+import { Dialog } from "../components/ui/Dialog";
 import { EmptyState } from "../components/ui/EmptyState";
 import { GlassPanel } from "../components/ui/GlassPanel";
+import { Menu } from "../components/ui/Menu";
+import { PasswordField } from "../components/ui/PasswordField";
 import { ProgressBar } from "../components/ui/ProgressBar";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { Skeleton } from "../components/ui/Skeleton";
 import { StarRating, StarRatingInput } from "../components/ui/StarRating";
 import { Tabs } from "../components/ui/Tabs";
 import { TextArea } from "../components/ui/TextArea";
+import { TextField } from "../components/ui/TextField";
 
 const COLORS = [
   ["surface", "Фон страницы"],
@@ -58,6 +63,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export function DesignPage() {
   const [rating, setRating] = useState<number | null>(4);
   const [review, setReview] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-12">
@@ -202,6 +208,67 @@ export function DesignPage() {
                 onChange={(event) => setReview(event.target.value)}
               />
             </div>
+          </Row>
+          <Row label="Однострочное поле">
+            <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+              <TextField label="Почта" type="email" placeholder="you@example.com" />
+              <TextField label="Имя" hint="Видно в ваших отзывах" />
+              <TextField label="Почта" defaultValue="не почта" error="Проверьте почту" />
+              <TextField label="Заблокировано" defaultValue="Только чтение" disabled />
+            </div>
+          </Row>
+          <Row label="Пароль">
+            <div className="w-full max-w-xs">
+              <PasswordField label="Пароль" hint="Не короче 8 символов" defaultValue="secret-pass" />
+            </div>
+          </Row>
+          <Row label="Меню">
+            <Menu
+              label="Аккаунт"
+              trigger={
+                <>
+                  <span
+                    aria-hidden
+                    className="inline-flex size-6 items-center justify-center rounded-full
+                      bg-accent-soft text-xs font-semibold text-accent"
+                  >
+                    А
+                  </span>
+                  Анна
+                </>
+              }
+              header={
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-body">Анна</span>
+                  <span className="text-xs text-subtle">anna@example.com</span>
+                </div>
+              }
+              items={[
+                { id: "settings", label: "Настройки", icon: Settings, onSelect: () => {} },
+                { id: "logout", label: "Выйти", icon: LogOut, onSelect: () => {} },
+              ]}
+            />
+          </Row>
+          <Row label="Диалог">
+            <Button variant="secondary" onClick={() => setDialogOpen(true)}>
+              Открыть диалог
+            </Button>
+            <Dialog
+              open={dialogOpen}
+              onClose={() => setDialogOpen(false)}
+              title="Перенести прогресс в аккаунт?"
+              actions={
+                <>
+                  <Button variant="secondary" onClick={() => setDialogOpen(false)}>
+                    Не переносить
+                  </Button>
+                  <Button onClick={() => setDialogOpen(false)}>Перенести</Button>
+                </>
+              }
+            >
+              В диалоге одно акцентное действие, остальные кнопки вторичные. Escape
+              закрывает окно.
+            </Dialog>
           </Row>
           <Row label="Карточка">
             <Card className="w-72">

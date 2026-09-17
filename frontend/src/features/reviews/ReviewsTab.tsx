@@ -1,5 +1,6 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { LogIn, Pencil, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router";
 
 import { QueryState } from "../../components/QueryState";
 import { Badge } from "../../components/ui/Badge";
@@ -10,6 +11,7 @@ import { EmptyState } from "../../components/ui/EmptyState";
 import { StarRating, StarRatingInput } from "../../components/ui/StarRating";
 import { TextArea } from "../../components/ui/TextArea";
 import { useDeleteReview, useReviews, useSaveReview } from "../../lib/api/queries";
+import { authPath } from "../../lib/auth/AuthProvider";
 import type { CourseReviews, ReviewOut } from "../../lib/api/types";
 import { plural } from "../../lib/plural";
 
@@ -79,10 +81,42 @@ function ReviewForm({
   );
 }
 
+function SignInToReview({ courseId }: { courseId: string }) {
+  const next = `/courses/${courseId}?tab=reviews`;
+
+  return (
+    <Callout
+      title="Войдите, чтобы оставить отзыв"
+      actions={
+        <>
+          <Link to={authPath("login", next)} tabIndex={-1}>
+            <Button variant="secondary" size="sm">
+              <LogIn size={14} />
+              Войти
+            </Button>
+          </Link>
+          <Link to={authPath("register", next)} tabIndex={-1}>
+            <Button variant="ghost" size="sm">
+              Зарегистрироваться
+            </Button>
+          </Link>
+        </>
+      }
+    >
+      Оценки и отзывы оставляют пользователи с аккаунтом. Прогресс, накопленный без
+      входа, при регистрации перенесётся в аккаунт.
+    </Callout>
+  );
+}
+
 function MyReview({ courseId, data }: { courseId: string; data: CourseReviews }) {
   const remove = useDeleteReview(courseId);
   const [editing, setEditing] = useState(false);
   const review = data.my_review;
+
+  if (!review && !data.is_authenticated) {
+    return <SignInToReview courseId={courseId} />;
+  }
 
   if (!review) {
     return data.can_review ? (
@@ -142,6 +176,9 @@ function MyReview({ courseId, data }: { courseId: string; data: CourseReviews })
 function ReviewItem({ review }: { review: ReviewOut }) {
   return (
     <li className="flex flex-col gap-2 py-4 first:pt-0 last:pb-0">
+      <span className="text-sm font-medium text-body">
+        {review.author_name ?? "Пользователь"}
+      </span>
       <div className="flex flex-wrap items-center gap-3">
         <StarRating value={review.rating} />
         {review.is_mine ? <Badge tone="accent">Вы</Badge> : null}

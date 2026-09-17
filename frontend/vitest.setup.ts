@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { afterAll, afterEach, beforeAll } from "vitest";
 
+import { applySession } from "./src/lib/auth/session";
 import { server } from "./src/test/server";
 
 // jsdom не реализует window.matchMedia. Даём управляемую заглушку: тесты
@@ -28,5 +29,8 @@ window.matchMedia = ((query: string) => ({
 window.scrollTo = (() => {}) as typeof window.scrollTo;
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  applySession(null);
+});
 afterAll(() => server.close());

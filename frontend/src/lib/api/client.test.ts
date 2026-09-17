@@ -1,7 +1,9 @@
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
+import { authSession } from "../../test/mocks";
 import { server } from "../../test/server";
+import { applySession } from "../auth/session";
 import { ApiError, apiFetch } from "./client";
 
 describe("apiFetch", () => {
@@ -29,5 +31,27 @@ describe("apiFetch", () => {
     );
 
     await expect(apiFetch("/api/courses")).rejects.toThrow(/500/);
+  });
+});
+
+describe("apiFetch и сессия", () => {
+  it("на 401 обновляет токен и повторяет запрос с новым", async () => {
+    const seen: (string | null)[] = [];
+    server.use(
+      http.get("/api/courses/:course", ({ request }) => {
+        const header = request.headers.get("Authorization");
+        seen.push(header);
+        return header === "Bearer fresh"
+          ? HttpResponse.json({ ok: true })
+          : HttpResponse.json({ detail: "Сессия истекла" }, { status: 401 });
+      }),
+      http.post("/api/auth/refresh", () =>
+        HttpResponse.json({ ...authSession, access_token: "fresh" }),
+      ),
+    );
+    applySession({ ...authSession, access_token: "stale" });
+
+    await expect(apiFetch("/api/courses/python-basics")).resolves.toEqual({ ok: true });
+    expect(seen).toEqual(["Bearer stale", "Bearer fresh"]);
   });
 });

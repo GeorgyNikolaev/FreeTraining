@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
 import App from "./App";
+import { AuthProvider } from "./lib/auth/AuthProvider";
 import { createTestQueryClient } from "./test/render";
 import { ThemeProvider } from "./theme/ThemeProvider";
 
@@ -12,7 +13,9 @@ function renderAt(path: string) {
     <QueryClientProvider client={createTestQueryClient()}>
       <ThemeProvider>
         <MemoryRouter initialEntries={[path]}>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </MemoryRouter>
       </ThemeProvider>
     </QueryClientProvider>,
@@ -25,8 +28,8 @@ describe("App", () => {
     expect(screen.getByRole("banner")).toHaveTextContent("FreeTraining");
   });
 
-  it("показывает страницу «не найдено» для неизвестного адреса", () => {
+  it("показывает страницу «не найдено» для неизвестного адреса", async () => {
     renderAt("/такой-страницы-нет");
-    expect(screen.getByText("Страница не найдена")).toBeInTheDocument();
+    expect(await screen.findByText("Страница не найдена")).toBeInTheDocument();
   });
 });

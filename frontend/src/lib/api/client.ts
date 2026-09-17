@@ -1,3 +1,5 @@
+import { getAccessToken, refreshSession } from "../auth/session";
+
 export class ApiError extends Error {
   readonly status: number;
 
@@ -25,15 +27,33 @@ async function readErrorMessage(response: Response): Promise<string> {
   return `Сервер ответил ошибкой ${response.status}`;
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  let response: Response;
+async function send(path: string, init: RequestInit | undefined): Promise<Response> {
+  const token = getAccessToken();
   try {
-    response = await fetch(path, {
+    return await fetch(path, {
       ...init,
-      headers: { "Content-Type": "application/json", ...init?.headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers,
+      },
     });
   } catch {
     throw new ApiError(0, "Не удалось связаться с сервером. Он запущен?");
+  }
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const hadToken = getAccessToken() !== null;
+  let response = await send(path, init);
+
+  // Access-токен истёк или отозван: один раз обновляем и повторяем запрос.
+  // Не вышло — пользователь стал гостем, запрос уходит без токена.
+  if (response.status === 401 && !path.startsWith("/api/auth/")) {
+    const session = await refreshSession();
+    if (session || hadToken) {
+      response = await send(path, init);
+    }
   }
 
   if (!response.ok) {
