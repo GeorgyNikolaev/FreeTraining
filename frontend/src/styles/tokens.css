@@ -294,6 +294,13 @@ body {
     max-width: 100%;
     border-radius: var(--radius-card);
   }
+  /* Длинная формула прокручивается сама, а не растягивает колонку. */
+  & .katex-display {
+    margin-block: 0 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 4px;
+  }
 }
 
 /* ---------- Схемы Mermaid ---------- */

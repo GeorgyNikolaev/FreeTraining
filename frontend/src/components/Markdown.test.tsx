@@ -10,6 +10,15 @@ vi.mock("./MermaidDiagram", () => ({
 }));
 
 describe("Markdown", () => {
+  it("отрисовывает строчные и блочные формулы через KaTeX", () => {
+    const content = ["Цена $C = S N(d_1)$.", "", "$$", "\\int_0^T \\sigma^2 \\, dt", "$$"].join("\n");
+
+    render(<Markdown content={content} />);
+
+    expect(document.querySelectorAll(".katex").length).toBe(2);
+    expect(document.querySelector(".katex-display")).toBeInTheDocument();
+  });
+
   it("отдаёт блок кода с языком mermaid отрисовщику схем, а не выводит его как код", () => {
     const content = ["```mermaid", "graph TD;", "  A-->B;", "```"].join("\n");
 

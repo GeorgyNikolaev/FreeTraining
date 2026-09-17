@@ -1,7 +1,10 @@
 import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import "katex/dist/katex.min.css";
 import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
 import ReactMarkdown, { type ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 
 import { MermaidDiagram } from "./MermaidDiagram";
 
@@ -53,8 +56,8 @@ export function Markdown({ content }: { content: string }) {
   return (
     <div className="prose-lesson">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex, rehypeHighlight]}
         components={{ code: CodeBlock, pre: PreBlock }}
       >
         {content}
