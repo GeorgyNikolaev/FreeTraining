@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
 
+import { AuthProvider } from "../lib/auth/AuthProvider";
 import { ThemeProvider } from "../theme/ThemeProvider";
 
 export function createTestQueryClient() {
@@ -25,13 +26,15 @@ export function renderWithProviders(
     <QueryClientProvider client={client}>
       <ThemeProvider>
         <MemoryRouter initialEntries={[route]}>
-          {path ? (
-            <Routes>
-              <Route path={path} element={ui} />
-            </Routes>
-          ) : (
-            ui
-          )}
+          <AuthProvider>
+            {path ? (
+              <Routes>
+                <Route path={path} element={ui} />
+              </Routes>
+            ) : (
+              ui
+            )}
+          </AuthProvider>
         </MemoryRouter>
       </ThemeProvider>
     </QueryClientProvider>,

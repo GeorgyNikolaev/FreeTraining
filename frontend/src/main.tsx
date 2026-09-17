@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 
 import App from "./App";
+import { AuthProvider } from "./lib/auth/AuthProvider";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import "./styles/tokens.css";
 
@@ -18,7 +19,9 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <BrowserRouter>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

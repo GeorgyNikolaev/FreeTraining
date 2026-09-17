@@ -3,6 +3,7 @@ import { setupServer } from "msw/node";
 
 import {
   attempts,
+  authSession,
   contentHealth,
   courseDetail,
   courseReviews,
@@ -16,6 +17,15 @@ import {
 } from "./mocks";
 
 export const handlers = [
+  // По умолчанию пользователь не вошёл: refresh-cookie нет
+  http.post("/api/auth/refresh", () =>
+    HttpResponse.json({ detail: "Сессия истекла, войдите снова" }, { status: 401 }),
+  ),
+  http.post("/api/auth/login", () => HttpResponse.json(authSession)),
+  http.post("/api/auth/register", () => HttpResponse.json(authSession, { status: 201 })),
+  http.post("/api/auth/logout", () => HttpResponse.json({ status: "ok" })),
+  http.post("/api/auth/guest/merge", () => HttpResponse.json({ status: "ok" })),
+  http.post("/api/auth/guest/discard", () => HttpResponse.json({ status: "ok" })),
   http.get("/api/courses", () => HttpResponse.json([courseSummary])),
   http.get("/api/courses/:course", () => HttpResponse.json(courseDetail)),
   http.get("/api/courses/:course/lessons/:module/:lesson", () =>

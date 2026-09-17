@@ -8,12 +8,16 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { Button } from "./Button";
 import { Callout } from "./Callout";
 import { Card, CardTitle } from "./Card";
+import { Dialog } from "./Dialog";
 import { EmptyState } from "./EmptyState";
+import { Menu } from "./Menu";
+import { PasswordField } from "./PasswordField";
 import { ProgressBar } from "./ProgressBar";
 import { ProgressRing } from "./ProgressRing";
 import { Skeleton } from "./Skeleton";
 import { StarRating, StarRatingInput } from "./StarRating";
 import { Tabs } from "./Tabs";
+import { TextField } from "./TextField";
 
 describe("Button", () => {
   it("вызывает обработчик нажатия", async () => {
@@ -158,5 +162,78 @@ describe("StarRating", () => {
     screen.getByRole("radio", { name: "3 из 5" }).focus();
     await user.keyboard("{ArrowLeft}");
     expect(onChange).toHaveBeenLastCalledWith(2);
+  });
+});
+
+describe("TextField", () => {
+  it("связывает подпись и показывает ошибку вместо подсказки", () => {
+    render(<TextField label="Почта" hint="Подсказка" error="Проверьте почту" />);
+
+    const input = screen.getByLabelText("Почта");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input).toHaveAccessibleDescription("Проверьте почту");
+    expect(screen.queryByText("Подсказка")).not.toBeInTheDocument();
+  });
+});
+
+describe("PasswordField", () => {
+  it("показывает и скрывает пароль", async () => {
+    const user = userEvent.setup();
+    render(<PasswordField label="Пароль" defaultValue="secret" />);
+
+    const input = screen.getByLabelText("Пароль");
+    expect(input).toHaveAttribute("type", "password");
+    await user.click(screen.getByRole("button", { name: "Показать пароль" }));
+    expect(input).toHaveAttribute("type", "text");
+    await user.click(screen.getByRole("button", { name: "Скрыть пароль" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+});
+
+describe("Menu", () => {
+  it("открывается, выполняет пункт и закрывается по Escape", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <Menu
+        label="Аккаунт"
+        trigger="Анна"
+        items={[
+          { id: "a", label: "Первый", onSelect: vi.fn() },
+          { id: "b", label: "Выйти", onSelect },
+        ]}
+      />,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Аккаунт" });
+    await user.click(trigger);
+    expect(screen.getByRole("menuitem", { name: "Первый" })).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: "Выйти" })).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+    await user.click(screen.getByRole("menuitem", { name: "Выйти" }));
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+});
+
+describe("Dialog", () => {
+  it("показывает заголовок, текст и действия, только когда открыт", () => {
+    const { rerender } = render(
+      <Dialog open onClose={() => {}} title="Перенести?" actions={<Button>Да</Button>}>
+        Пояснение
+      </Dialog>,
+    );
+
+    expect(screen.getByRole("dialog", { name: "Перенести?" })).toBeInTheDocument();
+    expect(screen.getByText("Пояснение")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Да" })).toBeInTheDocument();
+
+    rerender(<Dialog open={false} onClose={() => {}} title="Перенести?" />);
+    expect(screen.queryByText("Пояснение")).not.toBeInTheDocument();
   });
 });

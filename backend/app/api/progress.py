@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.courses import get_course_or_404
 from app.content.loader import read_lesson_text
-from app.deps import get_content_dir, get_session, get_user_id
+from app.deps import get_content_dir, get_session, get_user_id, get_writer_user_id
 from app.models import CourseReview, LastPosition, LessonProgress, QuizAttempt, utcnow
 from app.schemas import (
     AttemptSummary,
@@ -24,6 +24,7 @@ router = APIRouter(prefix="/api/progress", tags=["progress"])
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 ContentDep = Annotated[Path, Depends(get_content_dir)]
 UserDep = Annotated[str, Depends(get_user_id)]
+WriterDep = Annotated[str, Depends(get_writer_user_id)]
 
 
 @router.post(
@@ -35,7 +36,7 @@ async def complete_lesson(
     lesson_id: str,
     session: SessionDep,
     content_dir: ContentDep,
-    user_id: UserDep,
+    user_id: WriterDep,
 ) -> LessonProgressOut:
     course = get_course_or_404(content_dir, course_id)
     if read_lesson_text(course, module_id, lesson_id) is None:
@@ -78,7 +79,7 @@ async def save_position(
     payload: PositionInput,
     session: SessionDep,
     content_dir: ContentDep,
-    user_id: UserDep,
+    user_id: WriterDep,
 ) -> PositionOut:
     course = get_course_or_404(content_dir, course_id)
     if read_lesson_text(course, payload.module_id, payload.lesson_id) is None:

@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID, uuid4
 
 from sqlalchemy import (
     CheckConstraint,
@@ -90,6 +91,33 @@ class CourseReview(SQLModel, table=True):
     course_id: str
     rating: int = Field(sa_column=Column(SmallInteger, nullable=False))
     text: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
+class UserAccount(SQLModel, table=True):
+    __tablename__ = "user_account"
+    __table_args__ = (UniqueConstraint("email", name="uq_user_account_email"),)
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    email: str
+    name: str
+    password_hash: str
+    # Задел под подтверждение почты одноразовым кодом
+    email_verified_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    # Задел под восстановление пароля: сессии, выданные раньше, отзываются
+    password_changed_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
     created_at: datetime = Field(
         default_factory=utcnow,
         sa_column=Column(DateTime(timezone=True), nullable=False),

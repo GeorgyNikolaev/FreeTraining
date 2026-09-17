@@ -32,10 +32,10 @@ async def test_last_lesson_leads_to_exam(client):
     assert lesson["next"]["kind"] == "exam"
 
 
-async def test_lesson_marked_completed(client, session):
+async def test_lesson_marked_completed(client, session, user_id):
     session.add(
         LessonProgress(
-            user_id="local",
+            user_id=user_id,
             course_id="demo-course",
             module_id="01-basics",
             lesson_id="01-first-lesson",

@@ -1,5 +1,6 @@
 import type {
   AttemptSummary,
+  AuthSession,
   ContentHealth,
   CourseDetail,
   CourseReviews,
@@ -269,10 +270,24 @@ export const progressExport: ProgressExport = {
   reviews: [],
 };
 
+export const authSession: AuthSession = {
+  access_token: "test-access-token",
+  token_type: "bearer",
+  expires_in: 900,
+  user: {
+    id: "7f0c1c9e-0000-4000-8000-000000000001",
+    name: "Анна",
+    email: "anna@example.com",
+    email_verified: false,
+  },
+  guest_progress: null,
+};
+
 export const courseReviews: CourseReviews = {
   course_id: "python-basics",
   rating_average: null,
   rating_count: 0,
+  is_authenticated: true,
   can_review: true,
   modules_required: 2,
   modules_completed: 2,

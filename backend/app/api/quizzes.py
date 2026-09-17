@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.courses import get_course_or_404
 from app.content.models import Course, Quiz
-from app.deps import get_content_dir, get_session, get_user_id
+from app.deps import get_content_dir, get_session, get_writer_user_id
 from app.models import QuizAttempt
 from app.schemas import QuizPublic, QuizQuestionPublic, QuizResult, QuizSubmission
 from app.services.grading import grade_quiz
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api", tags=["quizzes"])
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 ContentDep = Annotated[Path, Depends(get_content_dir)]
-UserDep = Annotated[str, Depends(get_user_id)]
+WriterDep = Annotated[str, Depends(get_writer_user_id)]
 
 
 def find_quiz(course: Course, scope: str, module_id: str | None) -> tuple[Quiz, str]:
@@ -71,7 +71,7 @@ async def submit_quiz(
     submission: QuizSubmission,
     session: SessionDep,
     content_dir: ContentDep,
-    user_id: UserDep,
+    user_id: WriterDep,
 ) -> QuizResult:
     course = get_course_or_404(content_dir, submission.course_id)
     quiz, _ = find_quiz(course, submission.scope, submission.module_id)

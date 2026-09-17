@@ -17,10 +17,10 @@ async def test_catalogue_lists_courses(client):
     assert courses[0]["prerequisites"] == ["Базовый Python", "HTTP и REST"]
 
 
-async def test_catalogue_shows_progress(client, session):
+async def test_catalogue_shows_progress(client, session, user_id):
     session.add(
         LessonProgress(
-            user_id="local",
+            user_id=user_id,
             course_id="demo-course",
             module_id="01-basics",
             lesson_id="01-first-lesson",
@@ -49,10 +49,10 @@ async def test_course_detail_returns_tree(client):
     assert course["modules"][1]["has_quiz"] is False
 
 
-async def test_course_detail_marks_completed_lesson(client, session):
+async def test_course_detail_marks_completed_lesson(client, session, user_id):
     session.add(
         LessonProgress(
-            user_id="local",
+            user_id=user_id,
             course_id="demo-course",
             module_id="01-basics",
             lesson_id="01-first-lesson",
@@ -67,10 +67,10 @@ async def test_course_detail_marks_completed_lesson(client, session):
     assert lessons[1]["completed"] is False
 
 
-async def test_course_detail_shows_quiz_result(client, session):
+async def test_course_detail_shows_quiz_result(client, session, user_id):
     session.add(
         QuizAttempt(
-            user_id="local",
+            user_id=user_id,
             course_id="demo-course",
             scope="module",
             module_id="01-basics",

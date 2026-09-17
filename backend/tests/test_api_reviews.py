@@ -5,7 +5,7 @@ from app.models import CourseReview, QuizAttempt
 REVIEWS = "/api/courses/demo-course/reviews"
 
 
-async def complete_two_modules(client, session):
+async def complete_two_modules(client, session, user_id):
     for path in (
         "01-basics/01-first-lesson",
         "01-basics/02-second-lesson",
@@ -14,7 +14,7 @@ async def complete_two_modules(client, session):
         await client.post(f"/api/progress/lessons/demo-course/{path}")
     session.add(
         QuizAttempt(
-            user_id="local",
+            user_id=user_id,
             course_id="demo-course",
             scope="module",
             module_id="01-basics",
@@ -27,12 +27,24 @@ async def complete_two_modules(client, session):
     await session.commit()
 
 
-async def test_review_lifecycle(client, session):
+async def test_guest_cannot_review(client, session):
+    guest_id = "guest:" + "g" * 32
+    client.cookies.set("ft_guest", guest_id)
+    await complete_two_modules(client, session, guest_id)
+
+    data = (await client.get(REVIEWS)).json()
+    assert (data["is_authenticated"], data["can_review"]) == (False, False)
+    assert data["modules_completed"] == 2
+    assert (await client.put(f"{REVIEWS}/me", json={"rating": 5})).status_code == 401
+    assert (await client.delete(f"{REVIEWS}/me")).status_code == 401
+
+
+async def test_review_lifecycle(client, session, user_id):
     denied = await client.put(f"{REVIEWS}/me", json={"rating": 5})
     assert denied.status_code == 403
     assert (await client.get(REVIEWS)).json()["can_review"] is False
 
-    await complete_two_modules(client, session)
+    await complete_two_modules(client, session, user_id)
     session.add(CourseReview(user_id="other", course_id="demo-course", rating=2))
     await session.commit()
 
@@ -50,6 +62,8 @@ async def test_review_lifecycle(client, session):
     mine = next(review for review in data["reviews"] if review["is_mine"])
     other = next(review for review in data["reviews"] if not review["is_mine"])
     assert mine["author_progress_percent"] > 0
+    assert mine["author_name"] == "Анна"
+    assert other["author_name"] is None
     assert other["author_progress_percent"] == 0
 
     summary = (await client.get("/api/courses")).json()[0]
@@ -59,8 +73,8 @@ async def test_review_lifecycle(client, session):
     assert (await client.delete(f"{REVIEWS}/me")).status_code == 404
 
 
-async def test_invalid_rating_is_rejected(client, session):
-    await complete_two_modules(client, session)
+async def test_invalid_rating_is_rejected(client, session, user_id):
+    await complete_two_modules(client, session, user_id)
 
     for rating in (0, 6, 4.5):
         response = await client.put(f"{REVIEWS}/me", json={"rating": rating})
