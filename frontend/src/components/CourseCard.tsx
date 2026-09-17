@@ -1,9 +1,12 @@
+import { Star } from "lucide-react";
 import { Link } from "react-router";
 
 import type { CourseSummary } from "../lib/api/types";
+import { plural } from "../lib/plural";
 import { Badge } from "./ui/Badge";
 import { Card, CardBody } from "./ui/Card";
 import { ProgressRing } from "./ui/ProgressRing";
+import { formatRating } from "./ui/StarRating";
 
 const LEVELS: Record<string, string> = {
   beginner: "Начальный",
@@ -22,14 +25,6 @@ const STATUS_LABEL: Record<string, string> = {
   in_progress: "В процессе",
   not_started: "Не начат",
 };
-
-function plural(count: number, forms: [string, string, string]): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return forms[0];
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
-  return forms[2];
-}
 
 export function CourseCard({ course }: { course: CourseSummary }) {
   const status = course.status as keyof typeof STATUS_TONE;
@@ -71,11 +66,27 @@ export function CourseCard({ course }: { course: CourseSummary }) {
         </div>
 
         <div className="flex items-center justify-between gap-4 text-sm text-muted">
-          <span>
-            {course.module_count}{" "}
-            {plural(course.module_count, ["модуль", "модуля", "модулей"])} ·{" "}
-            {course.lesson_count}{" "}
-            {plural(course.lesson_count, ["урок", "урока", "уроков"])}
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>
+              {course.module_count}{" "}
+              {plural(course.module_count, ["модуль", "модуля", "модулей"])} ·{" "}
+              {course.lesson_count}{" "}
+              {plural(course.lesson_count, ["урок", "урока", "уроков"])}
+            </span>
+            {course.rating_average != null ? (
+              <Link
+                to={`/courses/${course.id}?tab=reviews`}
+                aria-label={`Оценка ${formatRating(course.rating_average)} из 5, оценок: ${course.rating_count}`}
+                className="inline-flex items-center gap-1 transition-colors duration-150
+                  hover:text-body"
+              >
+                <Star size={14} className="fill-rating text-rating" aria-hidden />
+                <span className="font-medium text-body">
+                  {formatRating(course.rating_average)}
+                </span>
+                <span>({course.rating_count})</span>
+              </Link>
+            ) : null}
           </span>
           <Link
             to={target}

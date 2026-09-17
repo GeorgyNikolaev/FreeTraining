@@ -1,6 +1,5 @@
 import { ArrowRight, History, RotateCcw } from "lucide-react";
-import { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 
 import { Markdown } from "../components/Markdown";
 import { ModuleTree } from "../components/ModuleTree";
@@ -12,7 +11,9 @@ import { Callout } from "../components/ui/Callout";
 import { Card, CardBody } from "../components/ui/Card";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { Skeleton } from "../components/ui/Skeleton";
+import { StarRating } from "../components/ui/StarRating";
 import { Tabs, type TabItem } from "../components/ui/Tabs";
+import { ReviewsTab } from "../features/reviews/ReviewsTab";
 import { useCourse, usePage, useResetCourse } from "../lib/api/queries";
 import type { CourseDetail } from "../lib/api/types";
 
@@ -38,11 +39,22 @@ export function CoursePage() {
   const { courseId = "" } = useParams();
   const { data: course, isLoading, error } = useCourse(courseId);
   const reset = useResetCourse(courseId);
-  const [tab, setTab] = useState("modules");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const tabs: TabItem[] = [{ id: "modules", label: "Модули" }];
   if (course?.has_cheatsheet) tabs.push({ id: "cheatsheet", label: "Шпаргалка" });
   if (course?.has_glossary) tabs.push({ id: "glossary", label: "Термины" });
+  tabs.push({
+    id: "reviews",
+    label: course?.rating_count ? `Отзывы · ${course.rating_count}` : "Отзывы",
+  });
+
+  const requestedTab = searchParams.get("tab");
+  const tab = tabs.some((item) => item.id === requestedTab) ? requestedTab! : "modules";
+
+  function setTab(next: string) {
+    setSearchParams(next === "modules" ? {} : { tab: next }, { replace: true });
+  }
 
   const startPath = course
     ? course.resume
@@ -67,10 +79,29 @@ export function CoursePage() {
             <div className="flex min-w-0 flex-col gap-3">
               <h1 className="text-2xl font-semibold tracking-tight">{course.title}</h1>
               <p className="max-w-2xl text-sm text-muted">{course.description}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {course.tags.map((tag) => (
                   <Badge key={tag}>{tag}</Badge>
                 ))}
+                {course.rating_average != null ? (
+                  <button
+                    type="button"
+                    onClick={() => setTab("reviews")}
+                    className="ml-2 rounded-control transition-opacity duration-150
+                      hover:opacity-80"
+                  >
+                    <StarRating value={course.rating_average} count={course.rating_count} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setTab("reviews")}
+                    className="ml-2 text-sm font-medium text-accent transition-opacity
+                      duration-150 hover:opacity-80"
+                  >
+                    Оценить курс
+                  </button>
+                )}
               </div>
             </div>
             <ProgressRing value={course.progress_percent} size={64} />
@@ -130,6 +161,7 @@ export function CoursePage() {
           ) : null}
           {tab === "cheatsheet" ? <PageTab courseId={course.id} page="cheatsheet" /> : null}
           {tab === "glossary" ? <PageTab courseId={course.id} page="glossary" /> : null}
+          {tab === "reviews" ? <ReviewsTab courseId={course.id} /> : null}
         </div>
       ) : (
         <Skeleton className="h-64 w-full" />

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { Badge } from "../components/ui/Badge";
 import { Breadcrumbs } from "../components/ui/Breadcrumbs";
@@ -10,7 +10,9 @@ import { GlassPanel } from "../components/ui/GlassPanel";
 import { ProgressBar } from "../components/ui/ProgressBar";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { Skeleton } from "../components/ui/Skeleton";
+import { StarRating, StarRatingInput } from "../components/ui/StarRating";
 import { Tabs } from "../components/ui/Tabs";
+import { TextArea } from "../components/ui/TextArea";
 
 const COLORS = [
   ["surface", "Фон страницы"],
@@ -19,6 +21,7 @@ const COLORS = [
   ["accent", "Акцент"],
   ["success", "Верно"],
   ["danger", "Неверно"],
+  ["rating", "Звёзды оценки"],
   ["line", "Граница"],
 ] as const;
 
@@ -53,6 +56,9 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function DesignPage() {
+  const [rating, setRating] = useState<number | null>(4);
+  const [review, setReview] = useState("");
+
   return (
     <div className="flex flex-col gap-12">
       <header className="flex flex-col gap-2">
@@ -180,6 +186,22 @@ export function DesignPage() {
             </div>
             <ProgressRing value={40} />
             <ProgressRing value={100} />
+          </Row>
+          <Row label="Оценка">
+            <StarRating value={4.3} count={12} />
+            <StarRatingInput value={rating} onChange={setRating} />
+            <StarRatingInput value={2} onChange={() => {}} disabled />
+          </Row>
+          <Row label="Поле текста">
+            <div className="w-full max-w-md">
+              <TextArea
+                label="Отзыв"
+                placeholder="Что понравилось, чего не хватило"
+                maxLength={2000}
+                value={review}
+                onChange={(event) => setReview(event.target.value)}
+              />
+            </div>
           </Row>
           <Row label="Карточка">
             <Card className="w-72">

@@ -12,6 +12,7 @@ import { EmptyState } from "./EmptyState";
 import { ProgressBar } from "./ProgressBar";
 import { ProgressRing } from "./ProgressRing";
 import { Skeleton } from "./Skeleton";
+import { StarRating, StarRatingInput } from "./StarRating";
 import { Tabs } from "./Tabs";
 
 describe("Button", () => {
@@ -136,5 +137,26 @@ describe("Tabs", () => {
     await user.click(screen.getByRole("tab", { name: "Шпаргалка" }));
 
     expect(onChange).toHaveBeenCalledWith("cheatsheet");
+  });
+});
+
+describe("StarRating", () => {
+  it("подписывает среднюю оценку для экранного диктора", () => {
+    render(<StarRating value={4.3} count={12} />);
+
+    expect(screen.getByRole("img", { name: "Оценка 4,3 из 5, оценок: 12" })).toBeInTheDocument();
+  });
+
+  it("выбирает оценку мышью и стрелками", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<StarRatingInput value={3} onChange={onChange} />);
+
+    await user.click(screen.getByRole("radio", { name: "5 из 5" }));
+    expect(onChange).toHaveBeenLastCalledWith(5);
+
+    screen.getByRole("radio", { name: "3 из 5" }).focus();
+    await user.keyboard("{ArrowLeft}");
+    expect(onChange).toHaveBeenLastCalledWith(2);
   });
 });

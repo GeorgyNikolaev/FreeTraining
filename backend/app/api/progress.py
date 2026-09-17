@@ -8,10 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.courses import get_course_or_404
 from app.content.loader import read_lesson_text
 from app.deps import get_content_dir, get_session, get_user_id
-from app.models import LastPosition, LessonProgress, QuizAttempt, utcnow
+from app.models import CourseReview, LastPosition, LessonProgress, QuizAttempt, utcnow
 from app.schemas import (
     AttemptSummary,
     LessonProgressOut,
+    MyCourseReview,
     PositionInput,
     PositionOut,
     ProgressExport,
@@ -186,6 +187,12 @@ async def export_progress(session: SessionDep, user_id: UserDep) -> ProgressExpo
         .all()
     )
 
+    reviews = (
+        (await session.execute(select(CourseReview).where(CourseReview.user_id == user_id)))
+        .scalars()
+        .all()
+    )
+
     return ProgressExport(
         user_id=user_id,
         exported_at=utcnow(),
@@ -208,5 +215,15 @@ async def export_progress(session: SessionDep, user_id: UserDep) -> ProgressExpo
                 updated_at=row.updated_at,
             )
             for row in positions
+        ],
+        reviews=[
+            MyCourseReview(
+                course_id=row.course_id,
+                rating=row.rating,
+                text=row.text,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+            )
+            for row in reviews
         ],
     )

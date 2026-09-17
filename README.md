@@ -88,6 +88,7 @@ uv run ruff check .
 ## Документы
 
 - `docs/superpowers/specs/2026-09-12-freetraining-v1-design.md` — дизайн-документ
+- `docs/superpowers/specs/2026-09-17-course-reviews-design.md` — оценки и отзывы курсов
 - `docs/course-create-prompt.md` — промпт для сборки курса через ИИ
 - `docs/course-format.md` — технический справочник формата
 - `docs/design-system.md` — правила оформления

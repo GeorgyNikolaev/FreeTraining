@@ -22,6 +22,8 @@ export const courseSummary: CourseSummary = {
   lesson_count: 3,
   progress_percent: 0,
   status: "not_started",
+  rating_average: null,
+  rating_count: 0,
   resume: null,
 };
 
@@ -263,4 +265,5 @@ export const progressExport: ProgressExport = {
       updated_at: "2026-09-12T10:00:00Z",
     },
   ],
+  reviews: [],
 };

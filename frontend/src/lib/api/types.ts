@@ -20,3 +20,6 @@ export type ContentHealth = Schemas["ContentHealth"];
 export type ContentErrorOut = Schemas["ContentErrorOut"];
 export type ResumePosition = Schemas["ResumePosition"];
 export type ProgressExport = Schemas["ProgressExport"];
+export type CourseReviews = Schemas["CourseReviews"];
+export type ReviewOut = Schemas["ReviewOut"];
+export type ReviewInput = Schemas["ReviewInput"];

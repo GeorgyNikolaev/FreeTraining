@@ -27,6 +27,7 @@ from app.schemas import (
 )
 from app.services.navigation import homework_neighbours, neighbours
 from app.services.progress import CourseProgress, load_course_progress
+from app.services.reviews import RatingStats, load_rating_stats
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
@@ -69,10 +70,12 @@ async def list_courses(
     session: SessionDep, content_dir: ContentDep, user_id: UserDep
 ) -> list[CourseSummary]:
     result = load_courses(content_dir)
+    ratings = await load_rating_stats(session, [course.id for course in result.courses])
     summaries: list[CourseSummary] = []
 
     for course in result.courses:
         progress = await load_course_progress(session, user_id, course)
+        rating = ratings.get(course.id, RatingStats())
         summaries.append(
             CourseSummary(
                 id=course.id,
@@ -85,6 +88,8 @@ async def list_courses(
                 lesson_count=course.lesson_count,
                 progress_percent=progress.percent,
                 status=progress.status,
+                rating_average=rating.average,
+                rating_count=rating.count,
                 resume=build_resume(course, progress),
             )
         )
@@ -97,6 +102,7 @@ async def get_course(
 ) -> CourseDetail:
     course = get_course_or_404(content_dir, course_id)
     progress = await load_course_progress(session, user_id, course)
+    rating = (await load_rating_stats(session, [course.id])).get(course.id, RatingStats())
 
     modules = [
         ModuleDetail(
@@ -133,6 +139,8 @@ async def get_course(
         exam_best_score=progress.exam_best,
         progress_percent=progress.percent,
         status=progress.status,
+        rating_average=rating.average,
+        rating_count=rating.count,
         resume=build_resume(course, progress),
     )
 

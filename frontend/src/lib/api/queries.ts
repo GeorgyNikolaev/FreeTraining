@@ -10,6 +10,7 @@ import type {
   AttemptSummary,
   ContentHealth,
   CourseDetail,
+  CourseReviews,
   CourseSummary,
   HomeworkDetail,
   LessonDetail,
@@ -18,6 +19,8 @@ import type {
   QuizPublic,
   QuizResult,
   QuizSubmission,
+  ReviewInput,
+  ReviewOut,
 } from "./types";
 
 export const queryKeys = {
@@ -32,6 +35,7 @@ export const queryKeys = {
     ["courses", courseId, "quizzes", moduleId] as const,
   exam: (courseId: string) => ["courses", courseId, "exam"] as const,
   attempts: (courseId: string) => ["attempts", courseId] as const,
+  reviews: (courseId: string) => ["courses", courseId, "reviews"] as const,
   health: ["health"] as const,
 };
 
@@ -185,5 +189,44 @@ export function useResetCourse(courseId: string) {
       void client.invalidateQueries({ queryKey: queryKeys.course(courseId) });
       void client.invalidateQueries({ queryKey: queryKeys.attempts(courseId) });
     },
+  });
+}
+
+export function useReviews(courseId: string): UseQueryResult<CourseReviews, ApiError> {
+  return useQuery({
+    queryKey: queryKeys.reviews(courseId),
+    queryFn: () => apiFetch<CourseReviews>(`/api/courses/${courseId}/reviews`),
+  });
+}
+
+function useInvalidateReviews(courseId: string) {
+  const client = useQueryClient();
+  return () => {
+    void client.invalidateQueries({ queryKey: queryKeys.courses, exact: true });
+    void client.invalidateQueries({ queryKey: queryKeys.course(courseId), exact: true });
+    void client.invalidateQueries({ queryKey: queryKeys.reviews(courseId) });
+  };
+}
+
+export function useSaveReview(courseId: string) {
+  const invalidate = useInvalidateReviews(courseId);
+
+  return useMutation({
+    mutationFn: (review: ReviewInput) =>
+      apiFetch<ReviewOut>(`/api/courses/${courseId}/reviews/me`, {
+        method: "PUT",
+        body: JSON.stringify(review),
+      }),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteReview(courseId: string) {
+  const invalidate = useInvalidateReviews(courseId);
+
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<unknown>(`/api/courses/${courseId}/reviews/me`, { method: "DELETE" }),
+    onSuccess: invalidate,
   });
 }

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class QuestionResult(BaseModel):
@@ -40,6 +40,8 @@ class CourseSummary(BaseModel):
     lesson_count: int
     progress_percent: int
     status: str
+    rating_average: float | None = None
+    rating_count: int = 0
     resume: ResumePosition | None = None
 
 
@@ -74,6 +76,8 @@ class CourseDetail(BaseModel):
     exam_best_score: int | None = None
     progress_percent: int
     status: str
+    rating_average: float | None = None
+    rating_count: int = 0
     resume: ResumePosition | None = None
 
 
@@ -184,6 +188,7 @@ class ProgressExport(BaseModel):
     lessons: list[LessonProgressOut]
     attempts: list[AttemptSummary]
     positions: list[PositionOut]
+    reviews: list["MyCourseReview"] = []
 
 
 class ContentErrorOut(BaseModel):
@@ -197,3 +202,50 @@ class ContentHealth(BaseModel):
     course_count: int
     errors: list[ContentErrorOut]
     warnings: list[ContentErrorOut]
+
+
+REVIEW_TEXT_LIMIT = 2000
+
+
+class ReviewInput(BaseModel):
+    rating: int = Field(ge=1, le=5, strict=True)
+    text: str | None = Field(default=None, max_length=REVIEW_TEXT_LIMIT)
+
+    @field_validator("text")
+    @classmethod
+    def normalize_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
+
+
+class MyReview(BaseModel):
+    rating: int
+    text: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class MyCourseReview(MyReview):
+    course_id: str
+
+
+class ReviewOut(MyReview):
+    id: int
+    course_id: str
+    is_mine: bool
+    author_progress_percent: int
+
+
+class CourseReviews(BaseModel):
+    course_id: str
+    rating_average: float | None
+    rating_count: int
+    can_review: bool
+    modules_required: int
+    modules_completed: int
+    my_review: MyReview | None
+    reviews: list[ReviewOut]
+
+
+ProgressExport.model_rebuild()
