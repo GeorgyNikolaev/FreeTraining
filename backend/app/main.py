@@ -4,15 +4,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import courses, health, progress, quizzes, reviews
-from app.config import settings
+from app.api import auth, courses, health, progress, quizzes, reviews
+from app.config import JWT_SECRET_HINT, settings
 from app.db import create_tables
+from app.redis import redis_client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    if not settings.jwt_secret:
+        raise RuntimeError(JWT_SECRET_HINT)
     await create_tables()
     yield
+    await redis_client.aclose()
 
 
 app = FastAPI(title="FreeTraining API", version="1.0.0", lifespan=lifespan)
@@ -25,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(courses.router)
 app.include_router(quizzes.router)
 app.include_router(progress.router)

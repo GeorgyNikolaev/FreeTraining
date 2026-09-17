@@ -106,7 +106,7 @@ async def test_export_contains_all_sections(client):
 
     export = (await client.get("/api/progress/export")).json()
 
-    assert export["user_id"] == "local"
+    assert export["user_id"].startswith("guest:")
     assert len(export["lessons"]) == 1
     assert export["lessons"][0]["course_id"] == "demo-course"
     assert export["attempts"] == []

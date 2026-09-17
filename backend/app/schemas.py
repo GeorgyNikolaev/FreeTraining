@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class QuestionResult(BaseModel):
@@ -234,6 +234,7 @@ class ReviewOut(MyReview):
     id: int
     course_id: str
     is_mine: bool
+    author_name: str | None = None
     author_progress_percent: int
 
 
@@ -241,11 +242,73 @@ class CourseReviews(BaseModel):
     course_id: str
     rating_average: float | None
     rating_count: int
+    is_authenticated: bool
     can_review: bool
     modules_required: int
     modules_completed: int
     my_review: MyReview | None
     reviews: list[ReviewOut]
+
+
+NAME_MAX_LENGTH = 50
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_LENGTH = 128
+
+
+def normalize_email(value: str) -> str:
+    return value.strip().lower()
+
+
+class RegisterInput(BaseModel):
+    name: str = Field(min_length=1, max_length=NAME_MAX_LENGTH)
+    email: EmailStr
+    password: str = Field(min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def strip_name(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def lower_email(cls, value: object) -> object:
+        return normalize_email(value) if isinstance(value, str) else value
+
+
+class LoginInput(BaseModel):
+    email: str = Field(min_length=1, max_length=320)
+    password: str = Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def lower_email(cls, value: object) -> object:
+        return normalize_email(value) if isinstance(value, str) else value
+
+
+class UserOut(BaseModel):
+    id: str
+    name: str
+    email: str
+    email_verified: bool
+
+
+class GuestProgress(BaseModel):
+    courses: int
+    lessons: int
+    attempts: int
+
+
+class AuthSession(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_in: int
+    user: UserOut
+    guest_progress: GuestProgress | None
+
+
+class Me(BaseModel):
+    user: UserOut
+    guest_progress: GuestProgress | None
 
 
 ProgressExport.model_rebuild()
