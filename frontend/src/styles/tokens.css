@@ -237,6 +237,22 @@ body {
     margin-block: 0 24px;
     padding-inline-start: 24px;
   }
+  /* Сброс Tailwind снимает маркеры у всех списков — в тексте урока они нужны. */
+  & ul {
+    list-style-type: disc;
+  }
+  & ol {
+    list-style-type: decimal;
+  }
+  & ul ul,
+  & ol ul {
+    list-style-type: circle;
+  }
+  /* У списка задач маркер — флажок, точка рядом с ним лишняя. */
+  & ul.contains-task-list {
+    list-style-type: none;
+    padding-inline-start: 0;
+  }
   & li {
     margin-block: 8px;
   }
