@@ -1,0 +1,55 @@
+# Продовый запуск. Папки backend, content и frontend/dist лежат рядом с deploy
+# в /opt/freetraining; наружу смотрит только Caddy на хосте.
+name: freetraining
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: freetraining
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в deploy/.env}
+      POSTGRES_DB: freetraining
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freetraining"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://freetraining:${POSTGRES_PASSWORD}@db:5432/freetraining
+      REDIS_URL: redis://redis:6379/0
+      CONTENT_DIR: /content
+      JWT_SECRET: ${JWT_SECRET:?задайте JWT_SECRET в deploy/.env}
+      COOKIE_SECURE: "true"
+      CORS_ORIGINS: '["https://learningfree.ru"]'
+    volumes:
+      - ../content:/content:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:

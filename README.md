@@ -118,3 +118,26 @@ uv run ruff check .
 - `docs/course-create-prompt.md` — промпт для сборки курса через ИИ
 - `docs/course-format.md` — технический справочник формата
 - `docs/design-system.md` — правила оформления
+
+## Деплой
+
+Сайт работает на `https://learningfree.ru` (сервер `root@85.235.205.47`, папка
+`/opt/freetraining`). В Docker крутятся PostgreSQL, Redis и бэкенд; собранный
+фронтенд раздаёт Caddy, установленный на хосте, он же выпускает HTTPS-сертификат.
+Файлы деплоя лежат в `deploy/`.
+
+Выложить текущую версию (фронтенд собирается локально):
+
+```bash
+./deploy/deploy.sh
+```
+
+Обновить только курсы, без пересборки:
+
+```bash
+./deploy/deploy.sh content
+```
+
+Секреты (`POSTGRES_PASSWORD`, `JWT_SECRET`) хранятся только на сервере в
+`/opt/freetraining/deploy/.env`, образец — `deploy/.env.example`. Сайт подключён
+к Caddy строкой `import /opt/freetraining/deploy/Caddyfile` в `/etc/caddy/Caddyfile`.

@@ -1,0 +1,27 @@
+# Подключается из /etc/caddy/Caddyfile строкой: import /opt/freetraining/deploy/Caddyfile
+learningfree.ru {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle /docs* {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle /openapi.json {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	handle {
+		root * /opt/freetraining/frontend/dist
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header / Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+www.learningfree.ru {
+	redir https://learningfree.ru{uri} permanent
+}
