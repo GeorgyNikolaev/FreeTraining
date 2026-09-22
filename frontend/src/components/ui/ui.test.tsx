@@ -8,6 +8,7 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { Button } from "./Button";
 import { Callout } from "./Callout";
 import { Card, CardTitle } from "./Card";
+import { CopyButton } from "./CopyButton";
 import { Dialog } from "./Dialog";
 import { EmptyState } from "./EmptyState";
 import { Menu } from "./Menu";
@@ -235,5 +236,28 @@ describe("Dialog", () => {
 
     rerender(<Dialog open={false} onClose={() => {}} title="Перенести?" />);
     expect(screen.queryByText("Пояснение")).not.toBeInTheDocument();
+  });
+});
+
+describe("CopyButton", () => {
+  it("кладёт текст в буфер обмена и на время меняет подпись", async () => {
+    const user = userEvent.setup();
+    render(<CopyButton text="print('привет')" />);
+
+    await user.click(screen.getByRole("button", { name: "Копировать" }));
+
+    await expect(navigator.clipboard.readText()).resolves.toBe("print('привет')");
+    expect(await screen.findByRole("button", { name: "Скопировано" })).toBeInTheDocument();
+  });
+
+  it("не падает и оставляет обычную подпись, когда буфер обмена недоступен", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Error("отказано"));
+
+    render(<CopyButton text="print('привет')" />);
+    await user.click(screen.getByRole("button", { name: "Копировать" }));
+
+    expect(screen.getByRole("button", { name: "Копировать" })).toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 });

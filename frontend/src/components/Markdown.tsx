@@ -7,9 +7,28 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 
 import { MermaidDiagram } from "./MermaidDiagram";
+import { CopyButton } from "./ui/CopyButton";
 
 function isMermaidClassName(className: string | undefined): boolean {
   return /(^|\s)language-mermaid(\s|$)/.test(className ?? "");
+}
+
+/**
+ * Собирает исходный текст блока кода.
+ *
+ * `String(children)` здесь не подходит: подсветка уже разобрала код на
+ * вложенные `<span>` по токенам, и в буфер ушло бы `[object Object]`.
+ * Поэтому дерево обходится целиком, а склеиваются только строки — они и есть
+ * ровно тот текст, что был между тройными кавычками.
+ */
+function collectText(node: ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(collectText).join("");
+  if (isValidElement(node)) {
+    return collectText((node.props as { children?: ReactNode }).children);
+  }
+  return "";
 }
 
 function CodeBlock({
@@ -36,6 +55,10 @@ function CodeBlock({
  * карточку кода и `white-space: pre`, из-за которого сообщение об ошибке
  * разбора не переносится по строкам. Поэтому для схемы `<pre>` не
  * рисуется вовсе — сразу отдаётся то, что вернул `CodeBlock`.
+ *
+ * У блока кода сверху справа висит кнопка «Копировать». Она лежит рядом с
+ * `<pre>`, а не внутри него: `<pre>` прокручивается по горизонтали, и
+ * вложенная кнопка уезжала бы вместе с длинной строкой.
  */
 function PreBlock({
   children,
@@ -49,7 +72,12 @@ function PreBlock({
       return <>{children}</>;
     }
   }
-  return <pre {...props}>{children}</pre>;
+  return (
+    <div className="code-block">
+      <CopyButton text={collectText(children)} className="code-block-copy" />
+      <pre {...props}>{children}</pre>
+    </div>
+  );
 }
 
 export function Markdown({ content }: { content: string }) {

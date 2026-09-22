@@ -6,6 +6,7 @@ import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { Button } from "../components/ui/Button";
 import { Callout } from "../components/ui/Callout";
 import { Card, CardBody, CardTitle } from "../components/ui/Card";
+import { CopyButton } from "../components/ui/CopyButton";
 import { Dialog } from "../components/ui/Dialog";
 import { EmptyState } from "../components/ui/EmptyState";
 import { GlassPanel } from "../components/ui/GlassPanel";
@@ -178,6 +179,9 @@ export function DesignPage() {
             <Button size="sm">Маленькая</Button>
             <Button size="md">Средняя</Button>
             <Button size="lg">Большая</Button>
+          </Row>
+          <Row label="Копирование">
+            <CopyButton text="print('привет')" />
           </Row>
           <Row label="Метки">
             <Badge>Новичок</Badge>

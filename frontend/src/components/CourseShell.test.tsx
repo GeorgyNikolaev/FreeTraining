@@ -88,4 +88,21 @@ describe("CourseShell", () => {
       screen.queryByRole("button", { name: "Свернуть содержание курса" }),
     ).not.toBeInTheDocument();
   });
+
+  /*
+   * Свёрнутое дерево остаётся в разметке: иначе анимировать закрытие нечего.
+   * Для скринридера и для запросов по роли его при этом нет — прячет
+   * `aria-hidden`, а `inert` заодно убирает ссылки из обхода по Tab.
+   */
+  it("оставляет свёрнутое дерево в разметке, но прячет его от доступности", async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    await user.click(screen.getByRole("button", { name: "Свернуть содержание курса" }));
+
+    const tree = document.querySelector("nav[aria-label='Содержание курса']");
+    expect(tree).toBeInTheDocument();
+    expect(tree?.closest("[aria-hidden='true']")).not.toBeNull();
+    expect(tree?.closest("[inert]")).not.toBeNull();
+  });
 });
