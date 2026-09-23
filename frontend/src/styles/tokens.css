@@ -281,7 +281,8 @@ dialog.dialog::backdrop {
   color: var(--text);
   font-size: var(--text-reading);
   line-height: 1.7;
-  max-width: 68ch;
+  /* max-width: 68ch; */
+  max-width: 100%;
 
   & h1 {
     font-size: 1.875rem;
@@ -408,7 +409,7 @@ dialog.dialog::backdrop {
 
 .code-block > pre {
   margin-block-end: 0;
-  padding-block-start: 48px;
+  /* padding-block-start: 48px; */
 }
 
 .code-block > .code-block-copy {
